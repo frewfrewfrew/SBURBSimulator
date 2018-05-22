@@ -1,4 +1,4 @@
-import 'dart:math' as Math;
+/*import 'dart:math' as Math;
 import 'dart:typed_data';
 
 import "../web/scripts/SBURBSim.dart";
@@ -14,7 +14,7 @@ part "../web/scripts/random_tables.dart"; //needed for global functions
 part "../web/scripts/random.dart";
 part "../web/scripts/v2.0/YellowYardResultController.dart";
 part "../web/scripts/Afterlife.dart";
-part "../web/scripts/sessionSummary.dart";
+part "../web/scripts/SessionSummary.dart";
 part "../web/scripts/Scenes/Scene.dart";*/
 
 
@@ -34,7 +34,6 @@ void setup() {
   testSessionSummaries = []; //reset
   testSessionSummaryJuniors = [];
   Session testSession = new Session(0);
-  testSession.setUpBosses();
   testSession.players = [];
   testSessionSummaries.add(testSession.generateSummary());
   testSessionSummaries.add(testSession.generateSummary());
@@ -57,3 +56,4 @@ void testCollateSummaries() {
   MultiSessionSummaryJunior mssj = MultiSessionSummaryJunior.collateMultipleSessionSummariesJunior(testSessionSummaryJuniors);
   //print(mssj.generateHTML());
 }
+*/

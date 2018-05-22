@@ -712,7 +712,7 @@ So, decide what you're going to do at trigger time and store that till render ti
 http://purplefrog.com/~jenny/SburbStory/index2.html?seed=47189
 bug fix: 47189  trying to break up a relationship that no longer exists after a 3x combo session + yellow yard.
 
-Initial thoughts: wth, that shouldn’t happen. i am CLONING the foreign players especially SO they will show up after a yard.
+Initial thoughts: wth, that shouldnâ€™t happen. i am CLONING the foreign players especially SO they will show up after a yard.
 
 
 at first yellow yard, 4 players. Maid of Time, Witch of Space, Witch of Void and Seer of Time. 2 players cloned on arrival. Witch of Void and  Seer of Time.
@@ -946,7 +946,7 @@ Yes. very, VERY obviously seeds are different early on. WV is doing different st
 The fight is over. Hephaestus Minion is dead. "
 Whelp. That's what I get for blaming ghosts.
 
-Whelp. That’s what I get for blaming all my problems on ghosts like a superstitious oldtimey dude. Looks like the problem is that after a yellow yard, the fucking BOSSES ARE SPAWNING DEAD. And OF COURSE when I tested, I apparently chose the least competent sessions in Paradox Space, so they hadn’t managed to really defeat anything so their session were going pretty much the same even after a reset.
+Whelp. Thatâ€™s what I get for blaming all my problems on ghosts like a superstitious oldtimey dude. Looks like the problem is that after a yellow yard, the fucking BOSSES ARE SPAWNING DEAD. And OF COURSE when I tested, I apparently chose the least competent sessions in Paradox Space, so they hadnâ€™t managed to really defeat anything so their session were going pretty much the same even after a reset.
 
 
 
@@ -1649,7 +1649,7 @@ You know, it's been awhile since I made a new scene entirely. Not since Luck/Fre
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Okay. Let’s try to roll our own url solution.
+Okay. Letâ€™s try to roll our own url solution.
 
 
 If I did not have any dynamic strings, I could shove all my binary variables into a single variable.
@@ -1668,7 +1668,7 @@ String, but can make int:  Class(0-12), Aspect(0-12), victimBlood(3 bytes), hair
 
  Object:  quirk  (only fav number for now, can bring up and make int)
 
-Proposal: params (for ghost) look like: i=1932873124987&s=”nWSZzne4F3RMBBnpMCcX3DcmHEfQwkIAB9Et3BoGIIEIAA6Rxwj0BDdzWO0tkPQhURwZkwDdBg2SuAjuSOP16VSsiHzgSjxWo18QXERilQiF”
+Proposal: params (for ghost) look like: i=1932873124987&s=â€nWSZzne4F3RMBBnpMCcX3DcmHEfQwkIAB9Et3BoGIIEIAA6Rxwj0BDdzWO0tkPQhURwZkwDdBg2SuAjuSOP16VSsiHzgSjxWo18QXERilQiFâ€
 
 Where i stores ints and binaries in defined way (i.e. 1 bit for binary, 4 bits for class and 4 for aspect, etc), and s stores the lz compressed comma separated strings.
 
@@ -1682,9 +1682,9 @@ Need to have a method where I pass it a list of players and a list of attributes
 
 No. How would you decode that? Dumb.
 
-Instead, always encode “as player”. Yes, afterlife needs LESS variables than char creator, but less likely to be shared.
+Instead, always encode â€œas playerâ€. Yes, afterlife needs LESS variables than char creator, but less likely to be shared.
 
- So.  Fuck pastJR, and go grab the attributes I’m using for players, not ghosts before I make my encoding.
+ So.  Fuck pastJR, and go grab the attributes Iâ€™m using for players, not ghosts before I make my encoding.
 But also include ghost attributes, like murderMode and dreamSelf.
 
 
@@ -1740,7 +1740,7 @@ Or
 
 
 275 characters down to 14. That is impressive as shit.
-80% reduction in size for integers.  If keep these savings across the whole url (strings don’t compress much, tho), I can expect a url to be ~650 characters long, which is way better.
+80% reduction in size for integers.  If keep these savings across the whole url (strings donâ€™t compress much, tho), I can expect a url to be ~650 characters long, which is way better.
 
 
 
@@ -1893,7 +1893,7 @@ huh. nope. damn.
 
 What is going on?
 
-b is: ¿ð÷søU and raw is: %C2%BF%C3%B0%C3%B7s%C3%B8%C2%99%10U%1B%12and nonraw is: ¿ð÷søU
+b is: Â¿Ã°Ã·sÃ¸Â™U and raw is: %C2%BF%C3%B0%C3%B7s%C3%B8%C2%99%10U%1B%12and nonraw is: Â¿Ã°Ã·sÃ¸Â™U
 
 okay, so the problem is it's getting caught on a pound sign, just stop having raw care about that shit.
 
@@ -1959,13 +1959,13 @@ b=D'%04*%C3%BE%C3%86%00(%01%01%1E&s=,,Programming,Science Fiction,
 
 b=%C3%BF%C3%BF%C3%BF*%C3%BE%C2%AD%00(%20%20%1E&s=,,Automation,History,
 
-dead is ‘g’   103
+dead is â€˜gâ€™   103
 
-alive is ‘G’  71
+alive is â€˜Gâ€™  71
 
 
 
-from him is ‘(‘ 40
+from him is â€˜(â€˜ 40
 
 all 3 differ only on character 7.
 
@@ -1980,14 +1980,14 @@ Creation: 	 uint8View[7] = (json.robot << 7) + (json.moon << 6) + (json.dead << 
 
 favorite number is 4 bits.
 
-automation? have code that generates all 255 possible values for the 8 bits, and tells me if it ever isn’t the same going as coming.
+automation? have code that generates all 255 possible values for the 8 bits, and tells me if it ever isnâ€™t the same going as coming.
 
 
 
 
 
-CONFIRMATION.  Doing "Mage of Hope, hair type 30, species human, moon prospit, blood colour #ff0000, favourite number 8, godDestiny ticked in check boxes”
-with "interests, which were programming and science fiction” results in a url being generated that contains a dead player.
+CONFIRMATION.  Doing "Mage of Hope, hair type 30, species human, moon prospit, blood colour #ff0000, favourite number 8, godDestiny ticked in check boxesâ€
+with "interests, which were programming and science fictionâ€ results in a url being generated that contains a dead player.
 
 So. what is the important part in all that. what is killing it.
 
@@ -4295,7 +4295,1827 @@ I can't get too bogged down by the first and ignore the second.
 
 
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It's been a month.
+
+WigglerSim had me.
+
+Now I need to sit down and SOLIDLY think about the npc update.
+
+First thing: reread manic's npc doc. Where did it go?
+
+Oh shit, manic made that ALL THE WAY IN AUGUST. Why does it take me so long to code??? Gotta go faster.
+
+
+
+Summary:
+
+Activated agents are like WV in that they can do shit on their own without a player.
+This will be in the Shenanigans update. (god i literally forgot WV was in this sim).
+
+Agent quests are based on their stats (specifically sanity???)
+
+Agents can spontaneously party up with a player.
+
+Some of the stuff, like sabatoging land quests doesn't apply anymore. Hrrrm.
+
+most of midnight crew is shenanigans. reviewing ut not planning it yet.
+
+BEHOLD MY ROBES
+ is going to be the meat of this one i think.
+
+
+
+ "Consort assistants can show up at any time, one per player. They are guaranteed to show up for Pages. "
+ definitely redoing since the new quest mechanic is a thing.
+
+ I think I want to have RANDOM quest rewards possible, like a new category that can give you a fraymotif, item OR npc companion.
+ time to start a trello cat.
+
+consort categories are great.
+
+"In other news, Hope players can have imaginary friends who function exactly the same as a consort Assistant, except they have different flavor text. ""
+hell yes.
+
+
+
+then a bunch of shenanigans
+then a bunch of horrorterror stuff that would ALSO make for great shenanigans.
+
+alright. i think i have a solid bead on how i want to do the npc companion foundation.
+
+EXCEPT: I need to have a list of all active NPCS, not just ones that are shoved into a player's inventory.
+
+
+SO.
+
+How to do this? Part of this will be in the shenanigans update, but I want to have the foundation right.
+
+I definitely want a folder of NPC Scenes.
+
+I know I have an NPCHandler object? What's that all about?
+
+Oh shit i already have a whole folder for "NPCEngine.". ....Cool. pastJR does it again.
+
+    Session session;
+    GameEntity king = null;
+    GameEntity queen = null;
+    GameEntity jack = null;
+    GameEntity queensRing = null; //eventually have white and black ones.
+    GameEntity kingsScepter = null;
+    GameEntity democraticArmy = null;
+
+
+    Can have a list of "active npcs" as well.
+
+
+
+    Once it's time for shenanigans, though, how do I associate an npc with quest lines?
+
+    Should it be attached to the npc itself? A scene they create that gets added to the npc scenes?
+    the way jack and wv add scenes right now?
+
+    which is another good point, need list of npc scenes attached to session.
+
+
+~~~~~~~
+
+Okay i want to have the title system manic worked out expanded to care about high stat AND low stat.
+
+That basically means you find the consort's title in a 2 dimensional matrix.
+
+one axis is high stat name and one axis is low stat name
+
+how to code this? maps? stat to name?
+
+map of maps.
+
+first map is highest stat.  contains a map of all the lowest stats and the titles they have.
+
+
+~~~~~~~
+
+Alright consorts were finished in two days.
+
+What to do now about carapaces?
+
+Carapaces aren't as random. Instead, CD is always going to be CD, he just might be Clubs Deuce
+or Capering Destroyer or Courtyard Droll.
+
+So Carapaces have an array of first names, an array of last names, and then an array of
+RINGED first names and RINGED last names.
+
+CD will always act like CD. That's just how it works.
+
+So, what carapaces are there? (check glitch faq as well)
+
+Jack (goes by Jack Noir unless something changes)
+CD
+HB
+DD
+PM
+WV
+AR
+JS (jazz singer)
+RB  (royal baker)
+
+Royalty: go by special names unless something changes
+WQ
+WK
+BQ
+BK
+
+
+So immediately it shakes out that if I pass a carapace a specific name
+it will use that name unless something changes in which case it rerolls it's name.
+
+
+
+alright i've got the discord brainstorming carapaces for me. Now what.
+
+Well, the obvious next route is to figure out how these carapaces get created.
+
+Things like the Midnight Crew are special and canon.
+
+Same with the Problem Sleuth team.
+
+So NPCHandler can have 4 arrays:
+
+Special Dersites
+Rando Dersites
+Special Prospitians
+Rando Prospitians.
+
+The carapces in general will be harder though.
+
+manic's 'active' system is especially important.
+
+Hrrrrrm.......
+
+I almost CAN'T do carapaces without at least thinking through shenanigans a bit. since carapaces have teams and shit.
+
+OR would things like that be in scenes.
+
+oh man "pose as a team" would be such a good scene to have, triggers if entire team is active.
+
+
+Alright.
+
+Without going into details, I want to spend 5 minutes (fuck i don't have my watch, whatever) 5 minutes
+thinking about use cases for the Shenanigans update in relation to carapaces.
+
+Existing shenanigans include: Depowering the Royalty (WV), Depowering the Black Queen in particular (Jack).
+
+New:
+
+Mail Quests for PM will give players random items (not related to their classpects).
+Misc Quests (baking, singing, painting, etc) will give stat bonuses? (multiple of the same scene?, just diff flavor text set)
+Rebel
+
+Midnight Crew Quests: Weaken Black Queen
+Problem Sleuth Quests: Strengthen White Royalty?
+
+Do Crime Quests:   Weaken Associated Royalty
+Solve Crime Quests: Strenthen Associated Royalty
+
+
+Alright, the temptation is to leave carapaces entirely till i'm ready for shenangians, but that's not
+gonna happen over night. Get them existing first.
+
+
+
+~~~~~~~~~~
+
+Alright.
+
+Time for the less mession critical npc companions.
+
+We have Brain Ghosts of friends/rivals/heart players, Robot versions of yourself, Leprechauns, and activated Dream Selves.
+
+First up will be Leprechauns, but I want to get everything brainstormed in one place.
+
+Dream Selves will be from a moon quest I think. If you're a heart player or there EXISTS a passive heart player of any type,
+you can get a Dream Quest to wake your dream self up permanently.
+
+If you do it, then you lose your dream self, and a player gets added to the party that is you, but dream.
+They have your exact same land, not a copy of it.
+
+I think all dream selves should be Players now, and an array, too, so you can sometimes have two of them.
+
+
+Alright, what about Brain Ghosts?  I say that's hope only. It should be a QUEST REWARD possibility, so I'll need
+to do random quests first. But basically, your best friend or rival OR the heart player can be a Brain Ghost.
+They aren't added to the Player list. They should be transparent like a ghost? THEY SHOULD BE RENDERED.
+
+What about RoboSelves?  If you have high enough alchemy skill, Alchemy scene can give you a RoboSelf
+(first NPC companion that isn't from quest line). RoboSelf will be of you if Active, and of someone else if Passive.
+RoboSelf will either be added to YOUR party, or to somebody you care a lot about (whether red or black). THEY SHOULD BE RENDERED.
+
+
+So both Brain Ghosts and RoboSelves, as players, should be rendered whether in combat or in quests.
+It MIGHT automatically happen, not sure.
+
+And now for the one I want to do first. Should be simple, though I want to sit down and think about Leprechaun naming schemes.
+I know the Brope has a doc somewhere. Here's what I remember?
+
+Basically, the first Leprechaun you get should have a name with a "1" pun in it, or similar.
+Second should have a two pun. So need to check companion list and see what  you got.
+
+For dead sessions should get exactly one per land? Not sure. Maybe part of Denizen questline.
+
+Alrigiht I found the doc from the Brope:
+
+READ FIRST: Clover, Crowbar, and Snowman are constants other than that do whatever
+
+
+1 and 2 and 6 will do mobility, 3 and 5 do freewill, 4 increases minluck and maxluck, 7 does sanity, 8 does all stats, 9 does hp, 10 does sanity, 11 does alchemy, 12 and 13 do freewill, 14 does sanity, and 15 does power
+
+seems solid, and this reminds me that they also need to give stat bonuses to the lord somehow.
+can either be permanent when they are added, or somehow linked to them being alive and in lord's party
+
+Didn't I do something like that at some point recently?
+
+....what was it?
+
+there we go. buff specibus.
+
+shit actually this looks easy.
+
+So, if a player is a lord, they get a minion buff, which lasts as long the minion is alive.
+minion buff just straight up adds the minions stats to the lord. sure, lords might be OP
+but isn't that the point?
+
+alright, so first thing first: get a lord buff.
+second thing second, add a "random reward" kind of reward
+
+actually maybe do opposite style. random reward calls some other reward's apply and gives you it's text, right?
+
+~~~~
+current bug, all leprechauns are getting the first name.
+oh, duh. never adding them to party.
+~~~~~~
+
+alright, time for robots.
+
+i think they'll be easy. if alchemy is high enough, make a bot, either of yourself,
+or of your best friend.
+
+
+~~~~~~
+
+BUG: each time you're rendered dead, it flips the context. maybe?
+
+robots and combo sessions are rendering upside down.
+
+WHY.
+
+
+What I have it doing now (that STILL isn't working)
+is that it saves the context before rendering for make dead, then restores it.
+
+i confirm the robot is only made dead once.
+
+is it rendered from scrat.... wait even if it was the restored context should......hrrrrm
+maybe not?
+
+let's test
+
+Drawing sprite from scratch Doomed RoboWitch of Blood's Corpse
+2VM144:1 Drawing sprite from scratch Witch of Blood's Corpse
+
+why.
+what about caching?
+
+in fact....nothing seems to be caching?
+should have a change in title if it renders again.
+fuck.
+
+looks like "render self" is called twice. why.
+
+
+WHY???
+
+render self should only be called on state change.
+right?
+
+fuck it , time to add debugging
+
+
+
+~~~
+Alright that took way too long but:
+
+rendering Doomed RoboWitch of Blood's Corpse from initSpriteCanvas
+VM166:1 Drawing sprite from scratch Doomed RoboWitch of Blood's Corpse
+VM166:1 rendering Doomed RoboWitch of Blood's Corpse from makeDead
+VM166:1 Drawing sprite from scratch Doomed RoboWitch of Blood's Corpse
+
+Look at that shit.  Why is their dead self getting initSpriteCanvas??? That should happen ONCE.
+........
+i even made sure it would only happen if null right there.
+
+and it keeps saying the canvas is null.
+
+this is not right.
+not right at all.
+
+~~~~~~~~
+i want to enable yellow yards for dead sessions.
+
+i think they are normally called by the aftermath.
+
+so now i just call it via the reckoning.
+
+Basically, for dead sessions, either the lawn ring is up, or you have a good relationship with your meta player
+(or it's the special session)
+
+the meta player will be all "Okay. I feel bad for you. I'll see if JR can do anything." (unless it is JR or AB?).
+
+Then yard.
+
+But.
+
+A secret.
 
 
 
 
+            timePlayer = findAspectPlayer(this.session.players, Aspects.TIME); //NEED to have a time player here.;
+            var s = new YellowYard(this.session);
+            s.timePlayer = timePlayer;
+            s.trigger(null);
+            s.renderContent(div);
+
+
+alright that looks simple enough
+
+
+~~~~~
+
+Alright, dead sessions are not allowing yards to happen. Look at this flagrant bluushit:
+
+Before Yard: Scene ID: 1 Name: DeadIntro Session Health: 130000.0 TimeTillReckoning: 397 Last Rand: 1140900365
+After Yard: Scene ID: 182 Name: DeadIntro Session Health: 130000.0 TimeTillReckoning: 397 Last Rand: 3086440375
+
+For the very first fucking scene the rand is differnet.
+WHY!?
+
+        this.rand.setSeed(this.session_id);
+is happening in reinit....hrm.
+
+okay i think i got it
+the session reinit isn't doing everything it needs to
+
+
+dead session on start up does:
+
+ mutator.sessionHealth = 13000 * Stats.POWER.coefficient;
+        sessionHealth = mutator.sessionHealth;
+        //have a metaplayer BEFORE you make the bullshit quests.
+        mutator.metaHandler.initalizePlayers(this);
+        metaPlayer = rand.pickFrom(mutator.metaHandler.metaPlayers);
+        metaPlayer.setStat(Stats.EXPERIENCE, 1300);
+        makeThemes();
+        timeTillReckoning = minTimeTillReckoning; //pretty long compared to a normal session, but not 16 times longer. what will you do?
+
+
+ compared to regular session
+
+       this.rand = new Random(session_id);
+         PotentialSprite.initializeAShitTonOfPotentialSprites(this);
+         npcHandler = new NPCHandler(this);
+         mutator = SessionMutator.getInstance();
+         this.setUpBosses();
+         this.setupMoons(); //happens only in reinit
+         stats.initialGameEntityId = GameEntity.getIDCopy();
+         print("Making sesssion $this with initialGameEntity id of ${stats.initialGameEntityId}");
+         ////print("Made a new session with an id of $session_id");
+
+         logger = Logger.get("Session: $session_id", false);
+
+         mutator.syncToSession(this);
+        resetAvailableClasspects();
+
+
+fucking hell.
+i don't think the dead reinit is even being called
+
+
+
+wait, no, it is.
+
+dammit.
+
+
+so what is happening? why is the random number not changing?
+
+bluuuuuuuuuuuh
+
+okay, let's do something dumb, set the random number to something really wrong
+
+........................
+
+Scene ID: 1 Name: DeadIntro Session Health: 130000.0 TimeTillReckoning: 350 Last Rand: 1140900365
+vs
+Scene ID: 90 Name: DeadIntro Session Health: 130000.0 TimeTillReckoning: 350 Last Rand: 1140900365
+
+What.
+The.
+Hell.
+
+I did:
+
+        this.rand.setSeed(131313131313);
+as the last thing in reinit. Why.
+
+What?
+
+((and more importantly. HOW. ))
+
+The session definitely doesn't go the same, either.
+
+Scene ID: 2 Name: DeadQuests Session Health: 130000.0 TimeTillReckoning: 350 Last Rand: 3514035271
+vs
+Scene ID: 91 Name: DeadQuests Session Health: 130000.0 TimeTillReckoning: 350 Last Rand: 3086440375
+
+
+it's count bullshit bugs vs count bullshit rocks, too.
+hrrrm.
+
+and that number....3086440375 is the one i kept seeing before. does that mean one extra seed kept being eaten?
+but then....why isn't 2 the same?
+
+i am so confused.
+
+
+
+A wave of destruction heralds the arrival of the God Tier Lord of Rage. They have many INTERESTS, including Classism and Genocide. They are the only Player. SBURB was never meant to be single player, and they have activated the secret 'Dead Session' mode as a punishment. Or is it a reward?
+
+Skaia is black and lifeless. What can they even do now? Is there even a way to win?
+
+They stare hopelessly at what was their former planet, now transformed into the Land of Heavy Balls and Blaze.
+
+Some asshole called Waste of Mind (jadedResearcher) is bothering them too, claiming to somehow both be a player from another session AND responsible for SBURB? This is bullshit. The local Skeletons begin flipping the fuck out. Do they ever stop rattleing?
+Scene ID: 2 Name: DeadQuests Session Health: 130000.0 TimeTillReckoning: 350 Last Rand: 3514035271
+
+
+A wave of destruction heralds the arrival of the Doomed Murder Mode God Tier Lord of Rage. They have many INTERESTS, including Classism and Genocide. They are the only Player. SBURB was never meant to be single player, and they have activated the secret 'Dead Session' mode as a punishment. Or is it a reward?
+
+Skaia is black and lifeless. What can they even do now? Is there even a way to win?
+
+They stare hopelessly at what was their former planet, now transformed into the Land of Charles and Rot.
+
+Some asshole called Waste of Mind (jadedResearcher) is bothering them too, claiming to somehow both be a player from another session AND responsible for SBURB? This is bullshit. In the distance, you can hear the relaxing sound of rustling.
+Scene ID: 91 Name: DeadQuests Session Health: 130000.0 TimeTillReckoning: 350 Last Rand: 3086440375
+
+The land is different.
+
+And.....huh.
+
+
+~~~~~~~
+
+Okay.
+
+Combo sessions with a player who WINS works. It's not a dead session.
+
+But the easter egg I'm working on is NOT working and I don't know why. Jesus fuck.
+
+I guess first i need to find a winning player.
+
+
+alright, i can see the new intro scenes are right and not deadIntros.
+
+
+it's even not calling the dead session intro scene. am i changing the controller out?
+
+Yes. I confirmed it switches over to Sim Controller (instead of DeadSimController) somehow.
+
+
+
+anger.
+
+~~~~~~~~
+
+Okay. I've found a session that AB lies about.
+
+I need to focus up. I haven't had to do this in a while and I feel rusty and overwhelmed.
+
+And weirdly tempted to just....sweep it under the rug. But no. Dear sweet precious AuthorBot needs help.
+
+Session is: 2544085392
+
+and i found it ~43 from the session 737292437 in AB.
+
+
+So, first step is to see if it's still wrong with images = pumpkin, although that hasn't been true since
+that very first time.
+
+Yep. That was a bust.
+
+Okay.
+
+So. Next step is to see if the session is wrong on it's own through ab.
+
+And the step after that is to see how far back i have to go before it's right.
+
+Alright so yes, looking for it directly shows everybody dying instead of better than expected.
+
+Let's go one back.
+
+Huh. Okay. Sessions even before that are busted too. How far do i have to go back before i find one that isn't?
+
+
+check second session in pile, then go back and do binary search
+
+alright, higher up wasn't but 3/4 through was, 2702805258.
+
+alright hopefully getting closer.
+AB is saying that 1348701762  is a combo session but it raw isn't (everybody dies)
+
+Okay i think i have found it.
+
+
+
+: 847410037 is normal.
+
+But it's SCRATCH does some fucked up shit.
+
+and the next session is a completely differenet seed depending on if : 847410037 was first or not.
+
+but what's weird.....wait.
+
+the two scratches are identical
+but the next session is different anyways?
+
+hrrrrm........
+
+maybe only sessions that do whatever is broken are different? I'm gonna look a few sessions up and see if anything
+is wrong higher.
+
+Going one up the session above the scratch is still different. Hrrm.  In both the smaller chains, it's a void waste session.
+
+id of 3867145154 vs 2702805258
+
+it's weird that it divurges so severely there.
+
+1027738496 is still differnt from what i see at the end, too. How high must i go before it divurges.
+
+or.
+
+different question. did the code change? what happens if i search for the first one
+
+the session after 847410037 is what i am interested in....
+
+
+yeah..... it's different.
+
+i guess..... that was just a page that was cached? fuck. well let's see if that original divurgent session is fixed.
+
+Nope.
+
+Fuck. Like seriously. Goddamn.
+
+Gotta focus up.
+
+My current goal is the same: find a session where the divurgence seems to start.
+
+So, is the one directly up different?
+
+930109068 in the big mess is mvp: Witch of Time With a Grist Level of: 508.0, but asked for directly is mvp: Witch of Time With a Grist Level of: 550.0
+
+That's pretty subtle.  What about one up from that?
+
+260330609 is a combo session in the big pile and a regular one stand alone. fuck. it heavily divurges there.
+
+subtle differences in 4118832719
+1348701762 goes from combo to tpk
+2690788458 is only subtly different and is wasted both times
+
+
+there we go.
+
+3867145154 is the same in both sets and is wasted.
+
+fucking wastes.
+
+honestly. at some point i should work on giving AB an upgrade where she literally blows everything away and recreates it.
+let NOTHING be preserved between sessions.
+
+just to make sure, going one back to 847410037
+
+yup.
+
+Alright then. asking 3867145154 if it's the same with images vs non.
+
+wait no that doesn't make sense.
+
+but anyways, looking at the sesssion in question.... it has one wasted  hope event....
+
+so i wonder if it's hope gnosis that's the problem.  one way to test: ask waste of hope stuck
+
+~~~~~~~~~~
+
+alright jesus fuck the sim is being a dick.
+
+/*holy fuck nothing i do keeps us from dying. oh well.
+        for(Player p in curSessionGlobalVar.players) {
+          p.addStat(Stats.HEALTH, 100);
+          p.makeAlive(); //why is this necessary, shogun stop killing us before you even get in.
+        }*/
+
+
+no more "oh well".
+
+But. If that isn't working.
+
+What would work?
+
+I don't even know why sb is dying? are they the original meta player for 4037 and gets superceded by jr?
+
+is it really noone else? fuck that is. i'm so sorry.
+
+gotta focus up.
+
+first step: check.
+
+Okay. First fact. It happens whether it's a "redemption" or "invasion".  This is important. I thought it was invasion only.
+
+It happens twice. But both times to nobody.
+
+Fuck. How is that even possible?
+
+First step, that piece of code represents "making sure players with zero health count as dead".
+So.
+When the session starts, print out all players and their stats. Probably a useful thing anyways. Maybe he never had
+init stats called?
+
+Okay.  nobody starts life with their health at -508. jesus fuck.
+
+I also see that even the "redeemed" FU is spawning doomed and murder mode because my life can never just be easy, can it?
+
+alright. I think that both problems have the same root:
+
+I need to re-generate the meta players.
+
+I'd also like to find out why nobody has negative health, but I think regenerating him will be good enough.
+
+there we fucking go. I'm TRYING to reinit the players, but as long as JR exists it wiill refuse to do so.
+
+so now i added code so it can insist on doing it anyways. i bet this was causing some yard bullshit or AB bullshit, too.
+
+alright. i THINK the reason sb is taking damage is because of that bug a few people have reported where
+dead sessions with a FORCED meta player will sometimes report the wrong meta player as being involved.
+
+.....
+
+I reinited all players.
+
+I fucking did it.
+
+I KNOW I did it because FU isn't spawning doomed and murder mode.
+
+But.
+
+Nobody still has negative hp.
+
+What.
+
+.........
+
+Is.
+
+Is it because he's a Lord, somehow? That's the other thing I changed.
+
+Fuck. It is. I make him a Page and he has a whopping 1 hp SOMEHOW. WHAT IS GOING ON.
+
+
+and now the invading sauce player doesn't exist anymore at all. wth. focus on nobody first tho.
+
+Okay.
+Okay.
+Okay.
+
+Step 1. Ask a regular lord nobody from session 13 how much hp he spawns with.
+
+76.
+
+Step 2.  Ask an invaded nobody how much hp he spawns with.
+
+.......................76. And he dies out of nowhere anyways.
+
+Clearly i need to go into that scene.
+
+Is anybody stealing hp?
+
+aw?
+
+It's still happening.
+
+I at least now know that the Lord buff can run into negative hp. But I don't know why. Nobody spawns with companions.
+
+that code isn't even hitting.
+
+but nobody still has 1 hp now anyways.
+
+hwy.
+
+~~~~~
+
+now that i at least have a bandaid mark II, i need to figure out why session invasions don't work anymore
+
+the player is rendered, they are a known foreign player. but then nothing happens.
+
+i guess... i just need. to find out why. that happens.
+
+or what normally happens.
+
+is it happening to combo sessions, too? i guess?
+
+Yes.
+
+I broke all combo sessions.
+
+I don't know why.
+
+it could be they aren't being added to the player list for some reason? how are they normally?
+
+aliensClonedOnArrival is null?
+
+        addAliensToSession(newSession, this.players); //used to only bring players, but that broke shipping. shipping is clearly paramount to Skaia, because everything fucking crashes if shipping is compromised.
+right before it's called it says:
+about to add: 1 aliens to new session.
+
+about to add: 1 aliens to new session.
+VM93:1 in method, adding 6 aliens to session with 11 players already
+VM93:1 after adding 6 aliens to session it has 17 players
+
+
+
+huh. Oh, that's right. I add the corpses too, just in case.
+for the relationship shit.
+
+but what else?
+
+they are clearly............
+
+
+oh.
+
+OH.
+
+Fuck.
+
+SimController.instance.startSession(true);
+        //load(curSessionGlobalVar.players, <Player>[], ""); //in loading.js
+
+
+the old way was to load the players. and the start
+the new way is to start the session normally which lets me get easter eggs.
+but it MIGHT be clearling out the alien players.
+
+let's find out, together.
+
+or get distracted googling marbits. whatever.
+
+Alright.
+
+Let's go.
+
+alright.
+
+i can confirm that shogun of sauce is in the player list so i don't have to worry about it getting wiped out.
+
+i can also confirm taht the intro is never called for him.
+
+so....what gives?
+
+~~~~~~~
+
+It's been 8 hours.
+
+I haven't solved this yet. Not fully.
+
+I can't keep coding, in addition to the fact that I'm wearing down, DM will be here soon.
+
+So.
+
+I am going to spend 5 minutes on the clock defining the problem. I should have done that sooner.
+
+The problem is that:
+
+Shogun does not even attempt to enter the session. (confirmed that intro is not called for him).
+At first, he seemed to be in the player list but he suddenly isn't anymore?
+Other dead session players can invade sessions no problem.
+Session 13 overrights existing players with meta players. This might blow shogun away.
+
+~~~~~~~
+
+........Alright.
+
+why.
+
+Why does the thief of blood loot the black king, but then doesn't have the scepter?
+
+cuz they get corpse smooched okay.
+
+but.
+
+why else?
+
+
+ThiefBlood (Wise Guy Book, RING OF ORBS EIGHTFOLD, Candelabra, ..., Nuclear Winter Poster, Compass) is looting BlackKing 's corpse of [SCEPTER]
+VM715:1 after looting I have (Wise Guy Book, RING OF ORBS EIGHTFOLD, Candelabra, Dice, ..., Compass, SCEPTER) and corpse has ()
+VM715:1 ThiefBlood (Wise Guy Book, Friendship Bracelet) is looting KnightLight 's corpse of []
+
+like right there.
+
+They get the RING and then......they go to loot their friend and dont' have it anymore.
+......
+....
+are they alchemizing with it?
+
+maybe add "crowned" to their title.
+
+....Oh.
+
+It's a robo clone of the Thief of Blood.
+
+Okay.
+
+So.
+
+
+
+How to do frog and reckoning?
+
+If a player or any of their companions or a prospit carapace has the Scepter, reckoning ends.
+If a player or any of their companions or a prospit carapace as the ring, frog happens.
+
+So new scenes. But can at least have a debug statement at the end of the current aftermath to test that asking the session
+"does a player own the black queens ring" or whatever.
+
+maybe game entities can have a flag "allied with players". which gets tripped if they are a companion
+a player, or prospit. or it can be a get
+
+
+yeah npc needs to know who their 'party leader' is.
+
+
+~~
+
+Alright. I need to figure out how to change the Reckoning and the Aftermath.
+
+I do NOT want the reckoning to be stoppable. You fuck up, you fuck up. Maybe in big bad update, can make it stopable
+but it summons a big bad.
+
+
+
+Okay so.
+
+How does reckoning currently happen?
+
+I think it's in the sim controller?
+
+        if((curSessionGlobalVar.canReckoning || curSessionGlobalVar.numScenes > maxScenes ||  findLiving(curSessionGlobalVar.players).isEmpty ) && curSessionGlobalVar.timeTillReckoning <= 0) {
+
+
+so. if the reckoning is available, or we've done too many scenes, or everyone is dead, or there is no time.
+
+that's easy to fix i think.
+
+just make it instead be
+
+if "reckoning == true || curSessionGlobalVar.numScenes > maxScenes ";
+
+and then different things can set it on.
+
+need to do instance, too.
+
+
+~~~~
+
+post scene refactoring:
+
+
+
+observed behavior:
+
+all the intro scenes go with no interuptions, then nothing else.
+
+no clue why. so. let's go digging.
+
+Alright, console says infinite ticks are happening with no ending.
+
+So.
+
+That's new.
+
+Ah, there we go. The players think they have zero scenes for some reason. Excellent.
+
+
+God fucking damn it. It thinks there are zero plaeyrs when it inits the scenes. because of course it does.
+
+I must be calling it at the wrong time. I'm gonna just....
+
+have players create their own scens on creation i think.
+wait no, then things who are technically players but not active ones would have useless scenes.
+nope nope nope
+
+~~~~~
+
+currently problem. only companions are being parsed as active, not bumped into carapaces like jack
+
+
+hrrm, it even says jack isn't active....but....
+A Jack Noir bumps into them and they chat a bit.
+
+that happens. that should be them activating
+
+~~~~~~~~~~~
+
+before adding ring from BlackQueen, their sylladex is (RING OF ORBS ???FOLD) and my sylladex is ()
+VM87:1 after adding ring from BlackQueen but before taking, their sylladex is (RING OF ORBS ???FOLD) and my sylladex is (RING OF ORBS ???FOLD)
+VM87:1 after taking ring from BlackQueen, their sylladex is (RING OF ORBS ???FOLD) and my sylladex is (RING OF ORBS ???FOLD)
+
+
+
+tell me how this makes sense.
+
+Just.
+
+jack takes the ring, and GETS the ring, but TWO ways I try to get it out of queens sylladex, and nothing.
+
+
+.... is it a copy thing?
+
+okay wait
+wait
+wait
+a fucking second.
+
+if i don't cache the ring and isntead directly say ........
+
+oh my fuck.
+
+i was setting       ring = target.ring;
+ but then i was letting the target change like an IDIOT. omfg
+
+
+
+~~~~~~
+
+why does jack only think he should even consider offering up the regisword once?
+
+.....are scene availibiites not getting reset or smoething? oh well, future jr will hafta do it
+
+~~~~~
+
+alright, pastjr couldn't figure this out. It's up to me.
+
+I know session mutators do weird shit like not reset between sessions, because tht's the point of them.
+
+Is it possible it's not re-creating jack or whoever between sessions? Hence it only does jacks stuff once
+ cuz he's fucking DEAD the next time?
+
+ How to test: print out each time a jack is made.
+
+ okay never mind, jack thought qbout it 4 times this time. Maybe his shennnaigans needs to be lower prioriry
+ .......
+ oh.
+ my.
+ fuck.
+ patsy isn't ever being returned. Of COURSE this is happening. God DAMN.
+
+ ~~~~~~~~
+
+             if(!g.dead) g.available;
+
+
+
+..............................
+
+what.
+
+what the fuck.
+
+that.
+why do i keep making that mistake lately. that's not a method, set it to true dunkass.
+
+
+~~~~~
+
+okay.
+
+now.
+
+
+the system thinks a random fucking player owns the ring when they dont'. wtf.
+
+maybe they lost it at some point, but never got marked as not it's owner....or they alchemized with it. fuck.
+
+
+~~~~~~~~
+
+Alright.
+
+So.
+
+Uh.
+
+How do I want to do this?
+
+Lands need to blow up. They kill their associated players, and set their land (if they are a player) to null.
+
+if they are a moon, they kill their associated players's dream selves and the carapaces, and set the sessions' prospit/derse to null.
+
+is that enough? I think so.
+
+but what about for dead sessions? ...worry about taht soon, i guess. for a dead session
+should make session unwinnable. that's a flag, right? yeah.
+
+it means ANY big bad or red miles activity can make a dead session unwinnable. that's the point, dunkass.
+~~~~~
+
+alright so. i'm fixing it up so that if your moon goes null you don't crash
+when you can't do horrorterror dreams.  So...what now?
+
+where does dreams actually happen? in quests? i'll need to do it for dead sessions, too
+
+wait...no?
+
+looks like it's just....
+        player.moon.doQuest(div, player, null);
+
+
+okay, so if moon == null, session.furthestRing.doQuest();
+
+looks solid
+
+and i guess if you somehow manage to blow up the FURTHEST RING you are just fucked and it crashes.
+
+thems the breaks
+
+
+~~~~~~~~~
+
+Alright. Time to stop futzing around with the Bullet Hell Sim.
+Looks like it'll be a three weekend project after all, not a two.
+
+
+Right now I need to code ShogunBot. He's a Villain Nerd, and collects trading cards of them and their stats.
+
+The Carapaces and (eventually) Dedicated Big Bads will keep track of their own stats. Things like:
+
+* How many times did you end the session with a Crown?
+* How many times did you ever have a crown?
+* How many npcs did you kill?
+* How many Players did you kill?
+* How many Planets did you kill?
+* How many Moons did you kill?
+* How many Sessions did you kill?
+* How many Scenes did you complete?
+* How many times did you die?
+* How many times were you active?
+* How many times were you a companion?
+
+Basically, new Object: BigBadBinder that is kept by MultiSessionSummary.
+
+(Should it involve local storage??? This sounds adorable. But maybe impractical. Because...I also want you to be able to
+go view any sessions the BigBad was active in. I could just store that and not the summary data...
+but what if there is a deploy and it gets invalidated?)
+
+Alright let's think about this. I want to introduce VERY rare things to the sim, and being able to have
+AB store information about sessions in your cache would be useful. ShogunBot could use this information as well.
+
+But how would this information work? Currently AB works via..........Shit am I talking about refactoring AB completely?
+
+Maybe I should. She IS kind of insane right now...though that's probably from session leakage.
+
+So, without any commitment to refactoring AB, if I were going to design her from scratch today I would want:
+
+*Ability to store session stats in cache.
+*Ability to 100% not have leakage between sessions.
+*No requirement for sessions to be each other's children. (let's PL's eventual async idea work).
+
+
+So. I could store session summaries as json or whatever. And recreate multisessionsummarires from that.
+
+But is that what I want? Would mean I'd need to have BigBad data in an individual session summary.
+
+How would I mark the data as dirty? That actually seems pretty obvious to me...wait no that'd be dumb.
+Hrrmmmm..
+
+It would need to be automatic, something I can't forget to do when I deploy. It would also have
+to be visible to the Observer, or they won't know why they lost their data.
+
+...
+...
+...
+
+AB Sanity Check.
+
+Before she checks ANY sessions, or lets you view any cached sessions, she does a sanity check.
+She picks a random session from her cache and compares it to her current view of it. If it matches up, you continue.
+
+If it doesn't, she displays a warning and asks if you'd like her to delete her cache, with an explanation that it's likely
+just from JR deploying.
+
+~~~~
+
+What order do steps need to be in?
+
+First: Keep AB exactly as is. Write "toJSON" method for SessionSummaries.  Call this method to store all found data in a cache.
+    keyed by original (in the case of combo) sessionID and the word "scratch" or not.
+
+Second: Make new page that displays ONLY the multisession summaries from memory. Cannot search for new ones
+and does not clog up the page with SessionSummaries.
+
+Third: On that new page, allow for filtering of session summaries.
+
+Fourth: Filtered Session Summaries has pagination. (never more than 13 displayed at a time)
+
+Fifth: On any page besides one (you know the one) AB does a sanity check before searching or displaying sessions.
+    Take a random stored session. Search for it now. Compare results.
+        if the same, start as normal
+        if different, display an error and delete your cache.
+
+Sixth: Decouple Sessions
+    Look at this closer when you get there, but litearlly wipe out all information kept between sessions.
+    Find all singletons or static classes and murder them. Turn them into instances.
+    Manually make session mutators and afterlifes get carried over between scratches and combos.
+        because it's manual, won't be carried over for yards or for ab searches
+
+Seventh:  Write ShogunBot
+    Allows data for BigBads to be displayed. (AB shares her data with her robot boyfriend)
+    Big Bad data has session id stored with it, along with Entity info. Allows easy filtering.
+    Can click a "view sessions" and it displays the session viewer.
+
+
+
+~~~~~~~~~~~
+
+alright . uh.
+
+why does shogun bot not know about the list of sessions i'm making?
+
+places to look:
+
+* place i create the list
+* place i convert hte list to json
+* place i load it from json
+
+
+What do I see?
+
+the creation of the list has either zero or one after a single session.
+
+Then, 35 carapaces are loded from json, and they are all zero:
+
+from json, sessions are now 0 for active and 0 long for carapace
+VM88:1 loaded carapace Jack Noir (SS) who is active 1 and sessions are now 1 for active and 0 long for carapace
+
+this repeats over and over until it's time to write to json:
+to json, sessions are now 0 for active and 0 long for carapace
+(program):1 to json, sessions are now 1 for active and 1 long for carapace
+
+
+how is it being called FROM json if it's never being called to json? and if that's the problem, why aren't the
+rest of the stats zeroed out, too?
+
+what else do i see?
+
+to json, sessions are now 0 for active and 0 long for carapace
+(program):1 to json, sessions are now 1 for active and 1 long for carapace
+(program):1 to json, sessions are now 0 for active and 0 long for carapace
+(program):1 to json, sessions are now 1 for active and 0 long for carapace
+14(program):1 to json, sessions are now 0 for active and 0 long for carapace
+2(program):1 to json, sessions are now 0 for active and 1 long for carapace
+14(program):1 to json, sessions are now 0 for active and 0 long for carapace
+2(program):1 to json, sessions are now 0 for active and 1 long for carapace
+
+
+so some of them are 1 big when they go to json....
+
+my assumption is it's any that were one this round......
+
+So...
+
+I guess the first thing I want to know is, why is "from json" being called? it looks like that's wehre the data is
+ being lost.
+
+ i kinda think that the carapace data shouldn't be messed with ....untill....
+
+
+ Oh okay.
+
+ So, what I'm doing is saving each session to the local cache every time it's done, since that's how
+ i make it so you don't hafta wait for ab to be done to have data.
+
+ i'm still not sure why 'to json' isn't being called tho
+
+ so let's go find the place where i save a session....
+
+
+    void save() {
+        //i need to load all the session summaries from memory
+        //then add myself to it
+        //then turn them all to json
+        //then save
+        Map<String, SessionSummary> summaries =  loadAllSummaries();
+        summaries[jsonKey] = this;
+        SessionSummary.saveAllSummaries(new List.from(summaries.values));
+    }
+
+
+
+    so it looks like what i do is i load all the summaries i've stored in json (which is empty the first time)
+    and then i add myself to it, and then i turn all the summaries back to json and put back into local storage
+
+6 total sessions got:
+
+DEBUG SHOGUNBOT: going to save a summary with 1 active sessions for  SS
+5  VM146:1 DEBUG SHOGUNBOT: loaded carapace summary with 0 active sessions for  SS
+
+
+so....it was saved once and loaded 5 times. this doesn't make sense. the stats still look right...
+
+
+when is save called?
+
+makeSummaryForSession...
+
+
+DEBUG SHOGUNBOT: making a session summary for session 1677437000
+VM176:1 DEBUG SHOGUNBOT: going to save a summary with 1 active sessions for  SS
+4 VM176:1 DEBUG SHOGUNBOT: loaded carapace summary with 0 active sessions for  SS
+
+
+
+
+
+this is insane.
+
+i notice i am confused.
+
+
+what it looks like it's saying is that it makes exactly one summary, then loads 4 of them. how. why.
+
+okay. Yes. that's the final session in the list.
+
+which means ab is printing too much shit out for me to read it all.
+
+time to go on a purge.
+
+looks like a lot of json
+
+
+
+yes okay
+
+VM196:1 DEBUG SHOGUNBOT: making a session summary for session 1054585160
+VM196:1 DEBUG SHOGUNBOT: going to save a summary with 1 active sessions for  SS
+VM196:1 DEBUG SHOGUNBOT: making a session summary for session 2952231370
+VM196:1 DEBUG SHOGUNBOT: going to save a summary with 1 active sessions for  SS
+VM196:1 DEBUG SHOGUNBOT: loaded a session summary with 0 active sessions for  SS
+VM196:1 DEBUG SHOGUNBOT: making a session summary for session 2952231370
+VM196:1 DEBUG SHOGUNBOT: going to save a summary with 1 active sessions for  SS
+2VM196:1 DEBUG SHOGUNBOT: loaded a session summary with 0 active sessions for  SS
+VM196:1 DEBUG SHOGUNBOT: making a session summary for session 2834243485
+VM196:1 DEBUG SHOGUNBOT: going to save a summary with 1 active sessions for  SS
+3VM196:1 DEBUG SHOGUNBOT: loaded a session summary with 0 active sessions for  SS
+(program):1 Debugging AB: going to check for combo in session: 2834243485 because makeCombined is true
+(program):1 DEBUG SHOGUNBOT: making a session summary for session 2834243485
+(program):1 DEBUG SHOGUNBOT: going to save a summary with 1 active sessions for  SS
+4(program):1 DEBUG SHOGUNBOT: loaded a session summary with 0 active sessions for  SS
+
+this looks better.
+
+now to look closely at it
+
+i'ts hard to focus but i can do this.
+
+these are from 5 sessions total.
+
+so let's add new lines
+
+
+VM196:1 DEBUG SHOGUNBOT: making a session summary for session 1054585160
+VM196:1 DEBUG SHOGUNBOT: going to save a summary with 1 active sessions for  SS
+
+
+VM196:1 DEBUG SHOGUNBOT: making a session summary for session 2952231370
+VM196:1 DEBUG SHOGUNBOT: going to save a summary with 1 active sessions for  SS
+VM196:1 DEBUG SHOGUNBOT: loaded a session summary with 0 active sessions for  SS
+
+VM196:1 DEBUG SHOGUNBOT: making a session summary for session 2952231370
+VM196:1 DEBUG SHOGUNBOT: going to save a summary with 1 active sessions for  SS
+2VM196:1 DEBUG SHOGUNBOT: loaded a session summary with 0 active sessions for  SS
+
+VM196:1 DEBUG SHOGUNBOT: making a session summary for session 2834243485
+VM196:1 DEBUG SHOGUNBOT: going to save a summary with 1 active sessions for  SS
+3VM196:1 DEBUG SHOGUNBOT: loaded a session summary with 0 active sessions for  SS
+
+(program):1 DEBUG SHOGUNBOT: making a session summary for session 2834243485
+(program):1 DEBUG SHOGUNBOT: going to save a summary with 1 active sessions for  SS
+4(program):1 DEBUG SHOGUNBOT: loaded a session summary with 0 active sessions for  SS
+
+
+so, i correctly see that it loads a session for each one saved, none at first, then 1, 2, etc.
+
+i notice that it always goes to save a summary with 1 active sessions, but then loads
+loaded a session summary with 0 active sessions for  SS
+
+alright.
+
+I know that the session list is a list of ints. or rather. a set that turns into a list
+does anything happen there?
+
+check where it gets created.
+
+DEBUG SHOGUNBOT:to json, sessions are now 1 for active and 0 long for crowned and made it [4047210998] and [] respectively
+(program):1 DEBUG SHOGUNBOT:to json, sessions are now 1 for active and 1 long for crowned and made it [4047210998] and [4047210998] respectively
+
+
+that looks good. so when it loads...
+
+this might be it:
+DEBUG SHOGUNBOT: from json, sessions are now 0 for active and 0 long for crowned, was [2583821404] and [2583821404] respectively
+VM227:1 DEBUG SHOGUNBOT: from json, sessions are now 0 for active and 0 long for crowned, was [2583821404] and [] respectively
+
+it has 0 when loading, evne if the json wasn't zero.
+
+i know this works for....
+DO i know this works for wigglersim? when was the last time i tested it?
+
+
+
+DEBUG SHOGUNBOT: from json, sessions are now 0 for active and 0 long for crowned, was [3463532254] and [3463532254] respectively. temporary set form is {}
+VM254:1 DEBUG SHOGUNBOT: from json, sessions are now 0 for active and 0 long for crowned, was [3463532254] and [] respectively. temporary set form is {}
+
+
+even the set is empty, which i wasn't expecting. i figured it....
+
+huh.
+
+if it's expecting to parse a set,but it's getting an array....does an array look different?
+
+yup, iti's expecting curly braces
+well
+i kno whow to fix that
+make it expect both
+or make a new method
+whatever
+make a new method is probalby correct
+
+
+I....
+
+what?
+
+this isn't right.
+
+i think it's acting differently, but never getting above one session long?
+
+hrm. or. no that makes sense, it's not collated. lets' go ask ShogunBot.
+
+~~~~~~~~~~~~
+
+>long, steadying breath.
+
+Players are doing things before they are in a session, because, for example, the Alchemy scene just says
+
+"who has highest alchemy, pick them." instead of "who owns this scene.".
+
+So the blood player enters the session, then gets the Life player to do alchemy.
+
+Redoing each scene to be sane would take time, and might not even work since some scenes are "groups of people do this"
+type of deals.
+
+Additionally, it gets rid of the "highest alchemy player" does alchemy that turn
+since suddenly ALL players can do alchemy that turn.
+
+Actually, that problem will happen no matter what. Ignore that for now.
+
+Another thing is that the sessions should be able to access available players,
+and so shouldn't try to secure a non active player. it's possible available does not exclude active
+so an easy fix is to do that first.
+
+actually, doing it that way is probably best, since each plaeyrs alcehmy scene as it stands now all chooses the same person
+that person just might not be available? i think?
+
+bluh.
+
+why am i so surprised that completely redoing how scenes work fucks shit up
+
+~~~~~
+
+confirmed that mail quests aren't working right. what hte fuck. i'd hoped it was because players were
+equipping the delivered items, but it just fucking isn't happening.
+
+Alright. Let's find out why.
+
+
+
+~~~~~~
+Just one more bug fix before I can go back to my myserties and gigglesnort.
+
+scratched sessions are crashing, just straight up crashing, the first time anyone tries to access a moon.
+
+To be fair, this is after red miles are going, but it was Derse that exploded and a prospit dreamer
+that couldn't dream.
+
+Which is also a good point: this prospit dreamer claims to have no moon but is trying to dream on prospit.
+
+so.
+
+first, figure out why there is no prospit, but the player thinks they have a prospit.
+
+print statement on reward
+oh wait, not, it IS aplly derse. wtf?
+
+but the scene it ends on is "do prospit bullshit".
+
+Hrrrmmmm....
+
+theory: it's from some sort of if statements where it's "if it's prospit, do x, else do derse"
+
+i guess maybe they got blown up mid dream quest?
+
+so rogue of mind is a real self without a dream self i'm thinking.....
+
+i don't think it's the rewards fault...
+
+i think the code for "dream in furthest ring" needs tweaked, and i think the rogue of mind needs to be marked as having
+a dead dream self. maybe moon explosions aren't working
+
+yeah only carapaces are listed out as dying from derse fuckign exploding.
+
+so that's where i'll start
+
+yeah it says that they all didn't die.
+
+this is wrong.
+
+i am
+i am so confused.
+further statements say that it was PROSPIT that exploded, despite it being visibly derse and all the dersite
+carapaces dying....did i typo?
+wait maybe two moons:
+
+HeirLife did not die  in a moon splosion. Is it not their moon? They have Derse and it was Derse, false
+(program):1 PageBreath did not die  in a moon splosion. Is it not their moon? They have Prospit and it was Derse, false
+
+so what's up with this . they have derse and it was derse
+
+is it a scratch thing? am i not syncing moons post scratch?
+
+god i hate looking at the really old shit and figuring out how scratches worked
+
+~~~~~
+
+found a crash when combo sessions don't know wht the dream palette of a player is.
+why.
+
+when i print it out, all the survivors have a dream palette. clones have it. what's going on?
+
+
+~~~~~~~~~
+
+
+it's 4/13
+
+I wanted to do a deploy today to at least have AB fixed.
+
+It's been DAYS.
+
+And things are currently WORSE than they were. Now instead of just being insane after X sessions, AB flat out doesn't
+return after like, 1 or 2 or sometimes as many as ten.
+
+I need to take a step back and just. Breathe. Define my problem for five minutes on the clock. Don't look
+for solutions yet.
+
+Alright: When this all started I was getting multiple reports about AB lying about sessions, especially
+for [???].  I was, with some trouble, able to replicate this. It was pretty rare.
+
+Once I found the problem, I tried to do my normal routine of debugging. View the session normally,
+view it in What Pumpkin mode, see if there's differences (there were not, but it's been awhile i might be crazy).
+
+Then, see if the the session goes wrong if it's the only session AB looks at (it did not).
+
+At that point I know it's a leak of some sort between sessions. Sometimes it's the afterlife, often it's a mutator.
+
+Basically, anything kept between sessions is suspect.
+But this time, unlike the last times, I couldn't find anything obvious.
+
+SO I did two huge refactorings designed to keep less information between sessions.  I even made it so that
+sessions go asynchronously (wiht PL's help), so that I could make a "AB sanity checker" page (which i still haven't finished).
+
+However, at that point AB stopped returning. After a lot of head scratching and hair pulling,
+I determined that EVERY time she doesn't return she calls the sessionComplete function
+and it does NOT give control back to AB.
+
+I determined that it DOES relinquish control when run alone, and that if a session that fails is run FIRST
+it will NOT fail.
+
+To me this means it's part of the multiple session structure, somehow.  Except, if it were that simple,
+she'd ALWAYS return on only the first session and no subsequent sessions.
+
+I tried printing out a lot of data, but sessons that fail don't seem to differ in any meaningful way compared to sessions
+that don't.
+
+I DID see that "combo" code is being called when I think it shouldn't, but it LOOKS like this might happen
+even for sucessful sessions.
+
+I don't have any leads, even after five minutes, so I"ll dig around combos again.
+
+~~~~~~
+
+ahahahah i accidentally destroyed this file like, two weeks ago. go me.
+
+got it restored but now i need to do a thing:
+
+
+~~~~~~~~
+
+BigBad summon conditions clearly need to be stored differently than scenes, because scenes are things that are proccessed
+after you're activated.
+
+Or are they?  I could have big bad startScenes be their own thing.  If I did that, then
+
+Start, Middle and End could all be the "same kind of thing".
+
+But the way i envisioned serializable scenes was completely different. What should I do?
+
+Don't think about what code I already have, think about what I need:
+
+I already have trigger Conditions created, which are meant to be for summoning, defeating, or any scene in between.
+
+If I don't need to differentiate those things as much what happens?
+
+A "summon" is just an action that ends with the big bad activating, which allows their main scenes to start being processed.
+
+A "defeat" is just an action that ends with the big bad DEactivating.
+
+So, A BigBad has three lists of scenes:
+
+Start, the regular scenes list and End.
+
+Does this sound right? Yes....
+
+~~~~~~~~
+
+Alright I need to focus up here:
+
+My SHORT TERM GOAL is to be able to prove that Big Bads can appear in a session.
+ Which means that, barring flavor text, the next step I need to take is to make a single "Effect" for a scene
+ that involves the BigBad actually being activated. Then, I need to have a text document of big bads that I parse
+ and a method every tick in a session that evaluates all known big bads to see if they have been activated.
+
+
+ I don't want to actually do that, though, before I've branched Main and Experimental.
+
+ SO.
+
+ The Order of things I should do is:
+
+ * Add flavor text to SummonScenes
+ * Add effects to SerializableScenes
+ * Text doc of a few Big Bads
+ * BUG FIXES
+ * Branch Main and Experimental
+ * Big Bad Activation Loop
+ * Test for crashes
+ * Teach ShogunBot how to make cards for non Carapace Big Bads
+ * Find sessions where the current Big Bads are being summoned
+
+
+
+ How to do FLAVOR TEXT:
+
+ Instead of it being a constant stored as a static (like i do with quests)
+ each TRIGGER CONDITION has a list of replacements.
+
+ A scene's flavor text builder lets you add anything from the list to the text box
+ and then when it's time to actually replace it you itterate through all your conditions
+ lists to replace shit.
+
+ but it's not enough to just be a list of strings, is it. it needs to be a MAP
+ of string, method to replace shit pairs.
+
+ does it need to be a method or could it be a get? i like it being a get i think.
+
+wait that might not work when i try to think it through...
+
+Map<String, LambdaOrWhatever> replacements;
+
+replacements["CARAPACENAME"] = replaceCarapaceName
+
+String replaceCarapaceName(String textWithNameInItProbably){
+    //do the replacey thing
+    return newStringWithTHeNameInsteadOfThePlaceholder;
+}
+
+Big thing I'll need ot do is make sure the thingy to replace is unique....
+
+Alright. Let's go.
+
+Wait shit i need to rethink this
+
+because i need to take in more than just a string. i need to take in....
+yes okay
+
+Map<String, ReplacementObject>
+
+where Replacement Object has the same string as it's key and then a lambda cuz i need to keep
+the key/values mapped together even when called....
+
+
+~~
+
+okay i can replace shit, what next?
+
+I need scenes to have a flavor text box, and for that box to also have a drop down for every trigger condition
+the scene has. these drop downs need to be added and removed if you add or remove trigger conditions.
+
+Seems complicated, so let's break it down into steps:
+
+STEP 1: FLAVOR TEXT BOX
+    STEP 1a: when you edit box ,edit's scene's text
+    STEP 1b: serialize flavor text
+STEP 2: for each current trigger, add a drop down plus button
+    STEP 2a: when you click button, adds selected word to flavor text box
+
+and now, a quick break
+
+or wait, what if the drop down is part of the trigger condition?
+
+what would that mean? well for one it would auto show up or be removed when the trigger condition changes... and it'd
+be obvious what it applies to....
+
+but how would it know which text box to add it's text to?
+
+let's do step 1 first
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Shit.
+
+Fuck.
+
+I'm confused again.
+
+I need to stop before I code anymore.
+
+What is a scene like?
+
+For a start scene, that's simple:
+
+triggers cause the thingy to become active.
+
+But what about for a more complicated scene, like let's say:
+
+
+BB attacks a PLAYER.
+
+The Trigger Conditions decide that the scene should happen.  maybe but....
+
+~~~~~~~~
+
+Okay.
+
+
+New plan:
+
+SerializableScenes have a list of targets, and boolean var for if they are supposed
+to apply effects to ONE target, or ALL TARGETS.
+
+TRIGGERCONDITIONS
+
+are ways to filter possible targets.
+
+CROWNEDCARAPACE becomes:
+* target is carapace <-- gets all carapaces
+* target is crowned <-- uses output of previous trigger to get only those with crowns
+* target has item X <-- uses output of previous trigger to get only those with item
+
+then it's triggered becomes if List<GameEntity> livingTargets.isNotEmpty && List<Land>  landTargets.isNotEmpty;
+
+
+
+
+~~~~~~~~
+
+Okay. I'm frustrated and confused. It's time to step back for five minutes, then maybe go take a break outside.
+
+AB is insane. I've gotten multiple reports about it, and this time it's worse than normal.
+
+I have a session, 2304171846, where a void gnosis happens and NOTHING IS RIGHT afterwards.
+
+I went and did a quick refactor to make sure the mutator isn't being shared between sessions, and added a thing to
+ the debug printout for the number of mutators.
+
+The first session after that void gnosis is still wrong. It ends in a space gnosis in reality but AB
+ thinks there's no gnosis and everything went okay.
+
+ When I ask her to print out what happened in the session, somehow she prints out a bunch of debug
+ lines but not any text unless it's about carapaces. I don't know why, but it means I can't
+ do a simple diff comparison of the sessions.
+
+ I'm frustrated, and I don't know what to do. If I could get her to print the entire session out correctly, then
+ I'd be fine. I know the NPC stuff is the most recent, so likely makes a new div instead of appendHtml
+ , it might be related to that.
+
+ Even without an auto diff, though, I should be able to compare scene ids and see where there's a difference.
+ It would be tedius and boring, but it gets me information I need.
+
+ I can't think of anything at all that would be shared between sessions at this point, and any step is better than nothing.
+
+ So.
+
+ I'm going to go outside and look at some nature for ten minutes, then I'm going to come back in and
+ spend a half hour or so line by line manually comparing the sessions.
+
+
+
+ ~~~~~~~~
+
+ Current Problem:
+
+ Editing flavor text was working. But NOW, no matter how I edit it, the scene data box updates but the
+ big bad data box does not.
+
+ i can confirm i can copy the scene box from one screen to another.
+
+ if i add a trigger it saves the big bad, but otherwise only saves the scene
+
+ it calls '        scene.syncForm();' while name and shit calls
+
+             syncDataBoxToScene();
+and all that is is:
+
+        dataBox.value = scene.toDataString();
+
+
+which...
+hrm...
+
+
+void syncForm() {
+    form.syncDataBoxToScene();
+    if(gameEntity is BigBad) {
+        (gameEntity as BigBad).syncForm();
+    }
+}
+
+well. huh. isn't that a punch in the face.
+
+
+
+~~~~~~~~
+
+five minutes on the clock.
+
+
+Problem:
+
+I want to be able to take a url in a text field and have it parse all the players out of it.
+
+The existing code very much assumes that a data string with multiple plaeyrs in it comes from the url.
+
+Anywhere that takes in a non url also takes in a single player (such as parsing TG).
+
+I wrote some code that seems to be a good hybrid, but it crashes and parses wrong (claims null interest categories, for example)
+then runs out of room saying that there's no more bytes if i change the player
+
+okay well, what does the bytes look like when it runs out?
+
+huh, it's not running out...
+
+it's....got a shit ton left.
+
+I'm so confused.
+
+~~~
+
+ab is still not sane bu ti need to work on ai.
+
+action scenes currently don't load/save right.
+
+
+both from a big bad and from the data url itself.
+
+okay, i made it so individual scenes can be loaded, but when i load an entire big bad it still doesn't have it's action scenes, only it's summon scenes and that's so dumb

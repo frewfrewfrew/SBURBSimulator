@@ -35,7 +35,7 @@ b=%00%00%00%C2%91%C3%B3%C2%80%10%C3%8B%0C%0C-&s=,,Peace,Satire,fixedTimer
 b=%00%00%00%18%C3%BEP%16%C2%9C%26%26%0E&s=,,Death,Satire,tieBreaker
 b=F%23%00*%C3%BEy%00X(%1B%0B&s=,,Wizards,Video Games,shitpostExtraordinaire
 b=%00%00%00%14%C3%B8%C2%9D%10%5C%13%17%20&s=,,Video Games,Mathematics,cappterUndercards
-b=%00%00%00%C2%A9%C3%B7B%10%0C%06%06.&s=,,Wrestling,Heroic Epics,perfectPankrator
+b=%00%00%00%3A%C3%B7%24%10LFF.&s=,,Heroic Epics,Pro Wrestling,perfectPankrator
 b=%00%00%00W%C3%BB%C3%91%10%18%18%17%16&s=,,Astronomy,Singing,JuvinescentMaldemar
 b=Y%3A%02%16%C3%BEX%00R%0D%0D%16&s=,,Pokemon,Rhythm Heaven,customDelta
 b=H4%1E%C2%A2%C3%BE%0B%00Q%17%17%3C&s=,,Memes,Psychology,capncrunchMemer
@@ -60,7 +60,7 @@ b=%C3%BF%C3%BF%C3%BFF%C3%BEb%00%1C))%3D&s=,,Inevitability,Hospitality,Doc Scratc
 b=%00%00%00%20%C3%B8%23%10PGGD&s=,,Drawing,Character Creation,InsufferableOracle
 b=%C2%9C%C2%9C6u%C3%BE%C3%81%00S%06%06%16&s=,,Love,Bass Playing,jegusPersona
 b=%00%00%005%C3%BEb%00E%23%23%26&s=,,Equality,Drawing,KnightedSoul
-b=%00%00%00%25%C3%B4%C2%BA%10QEE%04&s=,,Online Roleplaying,Automation,ailuroTemplar
+b=%00%00%00H%C3%B4%C3%8A%10UE%03%04&s=,,Self-Insertion,Automation,ailuroTemplar
 b=%C3%BF%C2%BE%C2%ADp%C3%BEU%08U%0F!%3B&s=,,Stars,More Stars,mariePoppo
 b=%C3%BE%C3%B8%05%C2%82%C3%BE%01%00%16%07%08%3F&s=,,Awful Puns,Song Writing,frostyMac
 b=%00%00%00h%C3%BE%22%00%14%19%19A&s=,,drawing,improvisation,royalCapitalist
@@ -97,3 +97,6 @@ b=%C2%AF%7B%01E%C3%BE%C3%99%00U%20%204&s=,,Chemistry,Movies,alchemicalTrekkie
 b=Q(%00%C2%B4%C3%BEZ%00X%22%22(&s=,,Online Trolling,Coding,masterShitposter
 b=%C2%85%40%C2%A6%C3%AA%C3%BE%7C%00S%0E!%0E&s=,,Wizards,Shipping,MF
 b=%00%00%00s%C3%BE%C2%90%00%13%1B%1B%1E&s=,,Video Games,Puns,Kerbett
+b=%3E%22%19%2B%C3%BE%C2%8A%00%1B%1E%1E%10&s=,,Baking,Coding,ablativeStoryteller
+b=%00%00%00%C3%93%C3%B0%C2%97%10%01%3D%3DH&s=,,Irony,Horrorterrors,shadingWarlock
+b=%2F%22%15%23%C3%BE%C2%AD%00%1455(&s=,,Technology,Horrorterrors,eldritchEye

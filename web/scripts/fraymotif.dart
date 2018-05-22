@@ -65,7 +65,7 @@ class Fraymotif {
         //first check to see if all aspects are included in the allies array.
         List<GameEntity> casters = [owner];
         //List<dynamic> aspects = [];
-        List<GameEntity> living = findLivingPlayers(allies); //dead men use no fraymotifs. (for now)
+        List<GameEntity> living = findLiving(allies); //dead men use no fraymotifs. (for now)
         for (num i = 1; i < this.aspects.length; i++) { //skip the first aspect, because that's owner.
             Aspect a = this.aspects[i];
             Player p = owner.rand.pickFrom(findAllAspectPlayers(living, a)); //ANY player that matches my aspect can do this.;
@@ -292,13 +292,13 @@ class Fraymotif {
         if (!this.canCast(owner, allies, enemies)) return "";
         List<GameEntity> casters = this.getCasters(owner, allies);
         this.makeCastersUnavailable(casters);
-        List<Player> living = findLivingPlayers(allies);
-        //print("$owner fraymotif: $this");
+        List<Player> living = findLiving(allies);
+        //;
         //Hope Rides Alone
         if (owner is Player && owner.aspect == Aspects.HOPE && living.length == 1 && owner.rand.nextDouble() > 0.85) {
             enemies[0].addBuff(new BuffFlat(Stats.CURRENT_HEALTH, -9999.0, combat:true)); //they REALLY believed in this attack.
             List<String> jakeisms = <String>["GADZOOKS!", "BOY HOWDY!", "TALLY HO!", "BY GUM"];
-            //print("Hope Rides Alone in session: ${owner.session.session_id}");
+            //;
             String scream = owner.aspect.fontTag() + owner.rand.pickFrom(jakeisms) + "</font>";
             return " [HOPE RIDES ALONE] is activated. " + owner.htmlTitle() + " starts screaming. <br><br><span class = 'jake'> " + scream + " </span>  <Br><Br> Holy fucking SHIT, that is WAY MORE DAMAGE then is needed. Jesus christ. Someone nerf that Hope player already!";
         }
@@ -366,6 +366,15 @@ class FraymotifCreator {
         return ret;
     }
 
+    List<Fraymotif> getUsableFraymotifsMagicalItem(MagicalItem owner, List<GameEntity> allies, List<GameEntity> enemies) {
+        List<Fraymotif> fraymotifs = owner.fraymotifs;
+        List<dynamic> ret = [];
+        for (num i = 0; i < fraymotifs.length; i++) {
+            if (fraymotifs[i].canCast(owner.owner, allies, enemies)) ret.add(fraymotifs[i]);
+        }
+        ////print("Found: " + ret.length + " usable fraymotifs for " + owner);
+        return ret;
+    }
 
     String getRandomNameForAspect(Random rand, Aspect aspect) {
         String ret = rand.pickFrom(aspect.fraymotifNames);
@@ -553,6 +562,10 @@ class FraymotifCreator {
 //effects are frozen at creation, basically.  if this fraymotif is created by a Bard of Breath in a session with a Prince of Time,
 //who then dies, and then a combo session results in an Heir of Time being able to use it with the Bard of Breath, then it'll still have the prince effect.
 class FraymotifEffect {
+    static int ALLIES = 1;
+    static int ENEMIES = 3;
+    static int SELF = 1;
+    static int ENEMY = 2;
     Stat statName; //hp heals current hp AND revives the player.
     num target; //self, allies or enemy or enemies, 0, 1, 2, 3
     bool damageInsteadOfBuff; // statName can either be applied towards damaging someone or buffing someone.  (damaging self or allies is "healing", buffing enemies is applied in the negative direction.)
@@ -656,11 +669,11 @@ class FraymotifEffect {
         ////print(["target chosen: ", targetArr]);
         if (this.damageInsteadOfBuff) {
             ////print("applying damage: " + targetArr.length);
-            //print("$owner fraymotif damage: $effectValue at $targetArr");
+            //;
             this.applyDamage(targetArr, effectValue);
         } else {
-            ////print("applying buff");
-            //print("$owner fraymotif buff: $effectValue at $targetArr");
+            ////;
+            //;
             this.applyBuff(targetArr, effectValue);
         }
     }
@@ -701,7 +714,7 @@ class FraymotifEffect {
                     t.addBuff(new BuffFlat(this.statName, e, combat:true));
                 }
             }
-            //print("$t, ${t.buffs}");
+            //;
         }
     }
 

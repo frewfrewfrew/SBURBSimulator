@@ -16,6 +16,7 @@ import "Space.dart";
 import "Time.dart";
 import "Void.dart";
 import "Dream.dart";
+import "Sauce.dart";
 
 abstract class Aspects {
     static Aspect SPACE;
@@ -31,6 +32,7 @@ abstract class Aspects {
     static Aspect HOPE;
     static Aspect LIFE;
     static Aspect DREAM;
+    static Aspect SAUCE; //just shogun
 
     static Aspect NULL;
 
@@ -48,6 +50,7 @@ abstract class Aspects {
         HOPE = new Hope(10);
         LIFE = new Life(11);
         DREAM = new Dream(12);
+        SAUCE = new Sauce(13);
 
         NULL = new Aspect(255, "Null", isInternal:true);
     }
@@ -105,6 +108,12 @@ abstract class Aspects {
 // ####################################################################################################################################
 
 class Aspect {
+
+    //what sort of quests rewards do I get?
+    double itemWeight = 0.01;
+    double fraymotifWeight = 0.01;
+    double companionWeight = 0.01;
+
 
     //difficulty of class + aspect results in odds of getting yaldobooger/abraxus equivlent.
     //.5 is normal. .5 + .5 = 1.0, equals 5% chance of  getting either (>95 or < 5)
@@ -236,6 +245,10 @@ class Aspect {
         initializeItems();
         this.initializeThemes();
         Aspects.register(this);
+    }
+
+    void processCard() {
+
     }
 
     void initializeItems() {

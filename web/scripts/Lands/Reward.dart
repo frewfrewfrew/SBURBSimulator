@@ -18,24 +18,83 @@ class Reward {
         if(p2 != null) p2.increasePower(); //interaction effect will be somewhere else
         String divID = "canvas${div.id}_${p1.id}";
         //print ("applying base reward, text is $text ");
-
         String ret = "$text";
         appendHtml(div, ret);
         CanvasElement canvas = new CanvasElement(width: canvasWidth, height: canvasHeight);
         div.append(canvas);
-        Element buffer = Drawing.getBufferCanvas(canvas);
+        Element buffer = Drawing.getBufferCanvas(canvas.width, canvas.height);
         Drawing.drawSinglePlayer(buffer, p1);
         if(image != null ) Drawing.drawWhatever(buffer, image);
         if(bgImage != null) Drawing.drawWhatever(canvas, bgImage);
-        //print("drawing player 1 is ${p1}");
+        //;
         Drawing.copyTmpCanvasToRealCanvas(canvas, buffer);
         if(p2 != null && (p2 is Player)){
-            Element buffer2 = Drawing.getBufferCanvas(canvas);
+            Element buffer2 = Drawing.getBufferCanvas(canvas.width, canvas.height);
             Drawing.drawSinglePlayer(buffer2, p2);
             Drawing.copyTmpCanvasToRealCanvasAtPos(canvas, buffer2, 150,0);
         }
-
     }
+}
+
+//can get you item, fraymotif or companion, is very class/aspect specific, too.
+//hope can get brain ghosts
+//lords can get leprechauns
+//other than that classes/aspects store their own odds for each type.
+class RandomReward extends Reward {
+
+    @override
+    void apply(Element div, Player p1, GameEntity p2, Land land, [String t]) {
+
+        WeightedList<Reward> options = new WeightedList<Reward>();
+        //if it's an item reward, check land progress before deciding what sort of item to give.
+        //fraymotifs will handle themselves
+        //companions only care if brain ghost (50% chance )or leprechaun (100% chance lords only get leprechauns)
+
+        //add each reward type with weight from class + aspect. item, fraymotif, companion.
+        List items;
+        if(land.thirdCompleted) {
+            items = p1.class_name.items;
+        }else if(land.secondCompleted) {
+            items = p1.aspect.items;
+        }else {
+            if(p1.session.rand.nextBool()) {
+                items = p1.interest1.category.items;
+            }else {
+                items = p1.interest2.category.items;
+            }
+            //for some reason adding this causes a concurrent modification error and i do not know why.
+            //should not be concurrent
+            //items.addAll(p1.interest2.category.items);
+        }
+        options.add(new ItemReward(items), p1.class_name.itemWeight + p1.aspect.itemWeight);
+        options.add(new FraymotifReward(), p1.class_name.fraymotifWeight + p1.aspect.fraymotifWeight);
+
+        if(p1.class_name == SBURBClassManager.LORD)
+        {
+            options.add(new LeprechaunReward(), p1.class_name.companionWeight + p1.aspect.companionWeight);
+        }else if(p1.aspect == Aspects.HOPE){
+            options.add(new BrainGhostReward(), p1.class_name.companionWeight + p1.aspect.companionWeight);
+            //options.add(new ConsortReward(), p1.class_name.companionWeight + p1.aspect.companionWeight);
+        }else
+        {
+            //p1.session.logger.info("DEBUG BRAIN: ${p1.aspect} player trying for a consort");
+             options.add(new ConsortReward(), p1.class_name.companionWeight + p1.aspect.companionWeight);
+        }
+
+        Reward chosen;
+        //some classes are nearly guaranteed to get certain things.
+        if(p1.class_name.isProtective && p1.companionsCopy.isEmpty) {
+            chosen = new ConsortReward(); //pages always get at least one companion.
+        }else if(p1.class_name.isMagical && p1.fraymotifs.isEmpty) {
+            chosen = new FraymotifReward();
+        }else if(p1.class_name.isSneaky && p1.sylladex.isEmpty) {
+            chosen = new ItemReward(items);
+        }else {
+            chosen = p1.session.rand.pickFrom(options);
+        }
+        return chosen.apply(div, p1, p2, land, t);
+    }
+
 }
 
 class BoonieFraymotifReward extends FraymotifReward {
@@ -98,10 +157,29 @@ class DenizenReward extends Reward {
     @override
     String image = "Rewards/sweetLoot.png";
     String bgImage = "Rewards/sweetGrist.png";
+
+    String carapaceHandle;
+
+    DenizenReward([String this.carapaceHandle]);
+
     @override
     void apply(Element div, Player p1, GameEntity p2, Land land, [String t]) {
         Item reward = p1.session.rand.pickFrom((p1.aspect.items));
         String text = " The ${Reward.PLAYER1} gains the fraymotif $FRAYMOTIF1, as well as all that sweet sweet grist hoard. Oh, and a ${reward.fullName}, too. ${reward.randomDescription(p1.rand)} ";
+        if(p1.class_name == SBURBClassManager.LORD) {
+            GameEntity c = Leprechaun.getLeprechaunForPlayer(p1); //will handle picking a name out.
+            text += " The ${Reward.PLAYER1} also unlocks the Leprechaun minion for this Land. They name them ${c.name}.";
+            p1.addCompanion(c);
+        }
+
+        if(p1.aspect == Aspects.HOPE) {
+            GameEntity c = BrainGhostReward.getGhost(p1); //will handle picking a name out.
+            if(c != null) {
+                text += " The ${Reward.PLAYER1} also believes hard enough to manifest ${c.title()}.";
+                p1.session.logger.info("Hope player beat denizen and manifested brain ghost");
+                p1.addCompanion(c);
+            }
+        }
         p1.increaseGrist(100.0);
         p1.sylladex.add(reward.copy());
         DenizenFeature df = land.denizenFeature;
@@ -109,14 +187,18 @@ class DenizenReward extends Reward {
             df.makeDenizen(p1);
         }
         Fraymotif f1 = df.denizen.fraymotifs.first;
-       // print("narrating player 1 is ${p1}");
+       // ;
         p1.fraymotifs.add(f1);
 
         text = text.replaceAll("${Reward.PLAYER1}", "${p1.htmlTitleBasicNoTip()}");
         text = text.replaceAll("${FRAYMOTIF1}", "${f1.name}");
         //super increases power and renders self.
         p1.setDenizenDefeated();
+
         super.apply(div, p1, p2, land,text);
+        if(carapaceHandle != null) {
+            new SpecificCarapaceReward(carapaceHandle).apply(div, p1, p2, land, text);
+        }
     }
 }
 
@@ -134,6 +216,140 @@ class BattlefieldReward extends Reward {
         super.apply(div, p1, p2, land,text);
     }
 }
+
+
+class ConsortReward extends Reward {
+    @override
+    String image = "Rewards/sweetFriendship.png";
+    WeightedList<Item> items;
+
+    ConsortReward();
+
+    @override
+    void apply(Element div, Player p1, GameEntity p2, Land land, [String t]) {
+        Consort template = land.consortFeature.makeConsort(p1.session);
+        Consort c = Consort.npcForPlayer(template, p1); //will handle picking a title out.
+        String text = " The ${Reward.PLAYER1} finds a ${c.sound}ing ${c.name}. They adopt it as their child.";
+        p1.addCompanion(c);
+        if(p2 != null && p2 is Player) {
+            Player p2Player = p2 as Player;
+            Consort c2 = Consort.npcForPlayer(template, p2);
+            p2Player.addCompanion(c);
+            text += "The ${Reward.PLAYER2} finds a ${c.name} as well.";
+            text = text.replaceAll("${Reward.PLAYER2}", "${(p2 as Player).htmlTitleBasicNoTip()}");
+        }
+        text = text.replaceAll("${Reward.PLAYER1}", "${p1.htmlTitleBasicNoTip()}");
+        p1.session.logger.info("AB: Consort reward.");
+        super.apply(div, p1, p2, land,text);
+    }
+}
+
+class LeprechaunReward extends Reward {
+    @override
+    String image = "Rewards/sweetFriendship.png";
+    WeightedList<Item> items;
+
+    LeprechaunReward();
+
+    @override
+    void apply(Element div, Player p1, GameEntity p2, Land land, [String t]) {
+        //snow man is a carapace.
+        GameEntity c = Leprechaun.getLeprechaunForPlayer(p1); //will handle picking a name out.
+        String text = " The ${Reward.PLAYER1} finds some sort of... ${p1.session.rand.pickFrom(Leprechaun.fakeDesc)}??? They decide to call them ${c.name} and vow to figure out exactly what ${c.name} is good for.";
+        p1.addCompanion(c);
+        //p2 gets NOTHING this is a Lord after all
+        text = text.replaceAll("${Reward.PLAYER1}", "${p1.htmlTitleBasicNoTip()}");
+        p1.session.logger.info("AB: fakeDesc reward.");
+        super.apply(div, p1, p2, land,text);
+    }
+}
+
+
+class BrainGhostReward extends Reward {
+    @override
+    String image = "Rewards/sweetFriendship.png";
+    WeightedList<Item> items;
+
+    BrainGhostReward();
+
+    static Player getGhost(Player p1) {
+        List<Player> possibleBrainGhosts = findAllAspectPlayers(p1.session.players, Aspects.HEART);
+
+
+        Player bestFriend = p1.getBestFriend();
+        possibleBrainGhosts.add(bestFriend);
+
+        Player worstEnemy = p1.getWorstEnemy();
+        possibleBrainGhosts.add(worstEnemy);
+
+
+       // p1.session.logger.info("DEBUG BRAIN:  before removing duplicates, brain ghosts are: $possibleBrainGhosts");
+
+
+        //don't have two copies of the same brain ghost
+        List<Player> toRemove = new List<Player>();
+        for(Player pbg in possibleBrainGhosts) {
+            for(GameEntity g in p1.companionsCopy) {
+                if(g is Player) {
+                    Player gP = g as Player;
+                    if(gP.chatHandle == pbg.chatHandle && gP.brainGhost) {
+                       // ;
+                        toRemove.add(pbg);
+                    }else {
+                       // ;
+                    }
+                }
+            }
+        }
+
+        for(Player tr in toRemove) {
+            //;
+            possibleBrainGhosts.remove(tr);
+        }
+        //p1.session.logger.info("DEBUG BRAIN:  Hope player trying for a brain ghost");
+
+       // p1.session.logger.info("DEBUG BRAIN: after removing duplicates, brain ghosts are: $possibleBrainGhosts");
+
+        Player p = p1.session.rand.pickFrom(possibleBrainGhosts);
+        //p1.session.logger.info("DEBUG BRAIN:  p is:  $p");
+
+        if(p != null) {
+            p = Player.makeRenderingSnapshot(p,false);
+            p.brainGhost = true; //so spooky and transparent
+            p.doomed = true;
+        }
+        return p;
+    }
+
+    @override
+    void apply(Element div, Player p1, GameEntity p2, Land land, [String t]) {
+        //p1.session.logger.info("DEBUG BRAIN:  brain ghost reward applying");
+        Player p ;
+        String relationship = "friend";
+        p  = BrainGhostReward.getGhost(p1);
+
+
+        String text;
+        if(p == null) {
+            ConsortReward c = new ConsortReward(); //just a normal consort
+            c.apply(div,p1, p2, land, t);
+            return;
+        }else {
+            relationship = p1.getRelationshipWith(p).saved_type;
+            text = " The ${Reward.PLAYER1} believes really hard in their $relationship, the ${p.htmlTitle()} they are surprised, but happy, when it turns out that the version of them in their head can help them out in strifes! ";
+        }
+        p1.addCompanion(p);
+        p2 = p; //so they get rendered.
+
+        text = text.replaceAll("${Reward.PLAYER1}", "${p1.htmlTitleBasicNoTip()}");
+        p1.session.logger.info("AB: brain ghost reward.");
+        super.apply(div, p1, p2, land,text);
+    }
+
+
+}
+
+
 
 
 class ItemReward extends Reward {
@@ -163,6 +379,36 @@ class ItemReward extends Reward {
 }
 
 
+class SpecificCarapaceReward extends Reward {
+    @override
+    String image = "Rewards/sweetFriendship.png";
+    Carapace carapace;
+    String carapaceHandle;
+
+    SpecificCarapaceReward(String this.carapaceHandle);
+
+    @override
+    void apply(Element div, Player p1, GameEntity p2, Land land, [String t]) {
+        String text = "";
+        carapace = p1.session.npcHandler.getCarapaceWithHandle(carapaceHandle);
+        if(carapace == null || carapace.dead) {
+            p1.session.logger.info("AB: The Carapace ($carapace that should have been triggered by this is dead.");
+            text = "The ${p1.htmlTitle()} gets the strangest feeling that something more should be happening now.";
+        }else {
+            p1.session.logger.info("AB: A Carapace ($carapace) joins in response to a quest.");
+
+            text = " The ${p1.htmlTitle()} attracts the attention of a ${carapace.htmlTitle()}. They decide they like the cut of the ${p1.htmlTitle()}'s jib and agree to tag along.";
+            if(carapace.partyLeader != null){
+                text = "$text They ditch the ${carapace.partyLeader.htmlTitle()} entirely.";
+            }
+            carapace.active = true;
+            p1.addCompanion(carapace);
+        }
+        super.apply(div, p1, p2, land,text);
+    }
+}
+
+
 class CodReward extends Reward {
     @override
     String image = "/Rewards/sweetCod.png";
@@ -184,13 +430,15 @@ class CodReward extends Reward {
         bardQuest = true;
         for(Player p in p1.session.players) {
             if(p.class_name == SBURBClassManager.BARD) {
-                p.renderSelf();
+                p.renderSelf("codTier");
             }
         }
-        p1.renderSelf();
+        //p1.renderSelf();
         super.apply(div, p1, p2, land,text);
     }
 }
+
+
 
 class FrogReward extends FraymotifReward {
     static String FRAYMOTIF1 = "FRAYMOTIF_NAME1";
@@ -409,30 +657,72 @@ class DreamReward extends Reward {
     }
 
     void applyProspit(Element div, Player p1, GameEntity p2, Land land) {
-        //p1.session.logger.info("prospit reward");
+       // p1.session.logger.info("getting random carapace for prospit reward");
         bgImage = "Prospit.png";
-        String text = "The ${p1.htmlTitleBasicNoTip()} is getting pretty popular among Prospitians.";
+        //but if they start up a SHENANIGAN we'll want custom text here.
+        Carapace companion;
+        Carapace activated;
+
+        //both of these can return null.
+        companion = p1.session.prospit.partyRandomCarapace;
+        activated = p1.session.prospit.activateRandomCaparapce;
+
+
+        String text = " The ${p1.htmlTitleBasicNoTip()} is getting pretty popular among Prospitians. ";
+        if(companion != null) {
+            companion.active = true;
+            String a  = "A";
+            if(companion.name.startsWith(new RegExp("[aeiouAEIOU]"))) a = "An";
+            text += "$a ${companion..htmlTitleWithTip()} takes a liking to them and agrees to find them back on their Land.";
+            p1.addCompanion(companion);
+        }else if (activated != null) {
+            activated.active = true;
+            String a  = "A";
+            if(activated.name.startsWith(new RegExp("[aeiouAEIOU]"))) a = "An";
+            text += "$a ${activated.htmlTitleWithTip()} bumps into them and they chat a bit.";
+        }
+
+
         p1.addStat(Stats.SANITY, -1); //just a bit.
         bool savedDream = p1.isDreamSelf;
         p1.isDreamSelf = true;
-        p1.renderSelf();
+        p1.renderSelf("dreamSelfProspit");
         super.apply(div, p1, p2, land,text);
         p1.isDreamSelf = savedDream;
-        p1.renderSelf();
+        p1.renderSelf("recoveredFromDreamSelfProspit");
 
     }
 
     void applyDerse(Element div, Player p1, GameEntity p2, Land land) {
-       // p1.session.logger.info("derse reward");
+        //p1.session.logger.info("getting random carapace for derse reward");
         bgImage = "Derse.png";
-        String text = " The ${p1.htmlTitleBasicNoTip()} is getting pretty popular among Dersites.";
+        Carapace companion;
+        Carapace activated;
+        companion = p1.session.derse.partyRandomCarapace;
+        activated = p1.session.derse.activateRandomCaparapce;
+
+        String text = " The ${p1.htmlTitleBasicNoTip()} is getting pretty popular among Dersites. ";
+        if(companion != null) {
+            companion.active = true;
+
+            String a  = "A";
+            if(companion.name.startsWith(new RegExp("[aeiouAEIOU]"))) a = "An"; //look at me, doing grammar
+            text += "$a ${companion.htmlTitleWithTip()} takes a liking to them and agrees to find them back on their Land.";
+            p1.addCompanion(companion);
+        }else if (activated != null) {
+            activated.active  = true;
+            p1.session.logger.info("AB: A dersite was activated.");
+            String a  = "A";
+            if(activated.name.startsWith(new RegExp("[aeiouAEIOU]"))) a = "An";
+            text += "$a ${activated.htmlTitleWithTip()} bumps into them and they chat a bit.";
+        }
         p1.corruptionLevelOther ++; //just a bit.
         bool savedDream = p1.isDreamSelf;
         p1.isDreamSelf = true;
-        p1.renderSelf();
+        p1.renderSelf("dream self derse");
         super.apply(div, p1, p2, land,text);
         p1.isDreamSelf = savedDream;
-        p1.renderSelf();
+        p1.renderSelf("recover from dream self derse");
 
     }
 

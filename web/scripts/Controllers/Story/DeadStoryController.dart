@@ -7,10 +7,11 @@ import 'dart:typed_data';
 import 'dart:collection';
 
 //replaces the poorly named scenario_controller2.js
-void main() {
+Future<Null> main() async {
   //maybe if i define it here it won't be the same as end time
   startTime =new DateTime.now();
-  //print("If you are in dartium, make sure to select this file to access it's global vars");
+  await globalInit();
+  //;
   new DateTime.now();
   new Timer(new Duration(milliseconds: 1000), () =>window.scrollTo(0, 0));
 
@@ -18,7 +19,7 @@ void main() {
   window.onError.listen((Event event){
   	ErrorEvent e = event as ErrorEvent;
     //String msg, String url, lineNo, columnNo, error
-    printCorruptionMessage(e);//(e.message, e.path.toString(), e.lineno.toString(), e.colno.toString(), e.toString());
+    printCorruptionMessage(SimController.instance.currentSessionForErrors,e);//(e.message, e.path.toString(), e.lineno.toString(), e.colno.toString(), e.toString());
     return;
   });
   loadNavbar();
@@ -40,8 +41,9 @@ void main() {
   }
 
   SimController.instance.shareableURL();
-
-  SimController.instance.startSession();
+  Session session = new DeadSession(SimController.instance.initial_seed);
+  checkEasterEgg(session);
+  session.startSession();
 }
 
 //so dead session finder can use this without a main.

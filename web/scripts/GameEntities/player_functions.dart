@@ -10,6 +10,8 @@ why would ANYONE EVER WANT THAT!?????????
 javascript is "WAT"ing me
 because of COURSE "null" == null is fucking false, so my code is like "oh, i must have some players" and then try to fucking parse!!!!!!!!!!!!!!*/
 List<Player> getReplayers(Session session) {
+    //needed or i can't parse moon data
+    if(session.prospit == null) session.setupMoons("getting replayers");
 //	var b = LZString.decompressFromEncodedURIComponent(getRawParameterByName("b"));
     //var available_classes_guardians = classes.sublist(0); //if there are replayers, then i need to reset guardian classes
     String raw = getRawParameterByName("b", null);
@@ -17,62 +19,55 @@ List<Player> getReplayers(Session session) {
     String b = Uri.decodeComponent(LZString.decompressFromEncodedURIComponent(getRawParameterByName("b", null)));
     String s = LZString.decompressFromEncodedURIComponent(getRawParameterByName("s", null));
     String x = (getRawParameterByName("x", null));
-    //print(" i think x is $x");
+    //;
     if (b == null || s == null) return <Player>[];
     if (b == "null" || s == "null") return <Player>[]; //why was this necesassry????????????????
-    ////print("b is");
+    ////;
     ////print(b);
-    ////print("s is ");
+    ////;
     ////print(s);
-    List<Player> ret =  dataBytesAndStringsToPlayers(b, s, x);
+    List<Player> ret =  dataBytesAndStringsToPlayers(session,b, s, x);
     //can't let them keep their null session reference.
+    //session.logger.info("replayers are $ret before moon syncing");
+
     for(Player p in ret) {
         p.session = session;
         p.syncToSessionMoon();
+        p.initialize();
     }
+    //session.logger.info("replayers are $ret");
     return ret;
 }
 
 
-void syncReplayNumberToPlayerNumber(List<Player> replayPlayers) {
-    if (curSessionGlobalVar.players.length == replayPlayers.length || replayPlayers.isEmpty) return; //nothing to do.
+void syncReplayNumberToPlayerNumber(List<Player> replayPlayers, Session session) {
+    if(replayPlayers.isEmpty) return;
+    Session session = replayPlayers.first.session;
+    if (session.players.length == replayPlayers.length || replayPlayers.isEmpty) return; //nothing to do.
 
-    if (replayPlayers.length < curSessionGlobalVar.players.length) { //gotta destroy some players (you monster);
-        num remove_length = curSessionGlobalVar.players.length - replayPlayers.length;
-        curSessionGlobalVar.players.removeRange(0, remove_length); //TODO check to see if off by one
+    //foreign players are allowed in, even though it'll jsut be more of the sae
+    int max = replayPlayers.length + session.aliensClonedOnArrival.length;
+    print("max is ${max} which is ${replayPlayers.length} replayers and ${session.aliensClonedOnArrival.length} aliens");
+
+    if (max < session.players.length) { //gotta destroy some players (you monster);
+        num remove_length = session.players.length - max;
+        print("I think I need to remove ${remove_length} players from ${session.players.length} to get $max");
+        session.players.removeRange(0, remove_length); //TODO check to see if off by one
         return;
-    } else if (replayPlayers.length > curSessionGlobalVar.players.length) {
-        int numNeeded = replayPlayers.length - curSessionGlobalVar.players.length;
-        ////print("Have: " + curSessionGlobalVar.players.length + " need: " + replayPlayers.length + " think the difference is: " + numNeeded);
+    } else if (max > session.players.length) {
+        int numNeeded = max - session.players.length;
+        ////print("Have: " + session.players.length + " need: " + replayPlayers.length + " think the difference is: " + numNeeded);
         for (int i = 0; i < numNeeded; i++) {
             // //print("making new player: " + i);
-            curSessionGlobalVar.players.add(randomPlayerWithClaspect(curSessionGlobalVar, SBURBClassManager.PAGE, Aspects.VOID));
+            session.players.add(randomPlayerWithClaspect(session, SBURBClassManager.PAGE, Aspects.VOID));
         }
-        ////print("Number of players is now: " + curSessionGlobalVar.players.length);
+        ////print("Number of players is now: " + session.players.length);
         return;
     }
 }
 
 
-//this code is needed to make sure replay players have guardians.
-void redoRelationships(List<Player> players) {
-    List<Player> guardians = <Player>[];
-    //print("redoing relationships");
-    for (num j = 0; j < players.length; j++) {
-        Player p = players[j];
-        guardians.add(p.guardian);
-        p.relationships.clear();
-        p.generateRelationships(curSessionGlobalVar.players);
-        p.initializeRelationships();
-    }
 
-    for (num j = 0; j < guardians.length; j++) {
-        Player p = guardians[j];
-        p.relationships.clear();
-        p.generateRelationships(guardians);
-        p.initializeRelationships();
-    }
-}
 
 void initializePlayersNoReplayers(List<Player> players, Session session) {
     for (num i = 0; i < players.length; i++) {
@@ -86,51 +81,7 @@ void initializePlayersNoReplayers(List<Player> players, Session session) {
 
 }
 
-void initializePlayers(List<Player> players, Session session) {
-    print("initializing players");
-    List<Player> replayPlayers = getReplayers(session);
-    print("replayers");
-    if (replayPlayers.isEmpty && session != null) replayPlayers = session.replayers; //<-- probably blank too, but won't be for fan oc easter eggs.
-    syncReplayNumberToPlayerNumber(replayPlayers);
-    print("synced");
-    for (num i = 0; i < players.length; i++) {
-        if (replayPlayers.length > i) players[i].copyFromPlayer(replayPlayers[i]); //DOES NOT use MORE PLAYERS THAN SESSION HAS ROOM FOR, BUT AT LEAST WON'T CRASH ON LESS.
-        if (players[i].land != null) { //don't reinit aliens, their stats stay how they were cloned.
-            players[i].initialize();
-            players[i].guardian.initialize();
-            if (replayPlayers.length > i) {
-                players[i].quirk.favoriteNumber = replayPlayers[i].quirk.favoriteNumber; //int.parse(replayPlayers[i].quirk.favoriteNumber, onError:(String input) => 0) ;//has to be after initialization;
-                if (players[i].isTroll) {
-                    players[i].quirk.makeTrollQuirk(players[i]); //redo quirk
-                } else {
-                    players[i].quirk.makeHumanQuirk(players[i]);
-                }
-            }
-        }
-    }
-    players[0].leader == true; //TODO why does this need to happen, why isn't it already true?
-    if (!replayPlayers.isEmpty) {
-        redoRelationships(players); //why was i doing this, this overrides robot and gim dark and initial relationships
-        //oh because it makes replayed sessions with scratches crash.
-    }
-    //print("initialize players done");
-}
 
-
-void initializePlayersNoDerived(List<Player> players, Session session) {
-    List<Player> replayPlayers = getReplayers(session);
-    for (num i = 0; i < players.length; i++) {
-        if (replayPlayers[i] != null) players[i].copyFromPlayer(replayPlayers[i]); //DOES NOT use MORE PLAYERS THAN SESSION HAS ROOM FOR, BUT AT LEAST WON'T CRASH ON LESS.
-        players[i].initializeStats();
-        players[i].initializeSprite();
-    }
-
-    //might not be needed.   futureJadedResearcher (FJR) has begun pestering pastJadedResearcher(PJR).  FJR: Yeah, no shit sherlock
-    if (!replayPlayers.isEmpty) {
-        redoRelationships(players); //why was i doing this, this overrides robot and gim dark and initial relationships
-        //oh because it makes replayed sessions with scratches crash.
-    }
-}
 
 
 Player blankPlayerNoDerived(Session session) {
@@ -186,8 +137,8 @@ Player randomPlayerNoDerived(Session session, SBURBClass c, Aspect a) {
 
 
 Player randomPlayerWithClaspect(Session session, SBURBClass c, Aspect a, [Moon m = null]) {
-    ////print("random player");
-   // //print("class: $c, aspect: $a, session: $session");
+    ////;
+   // //;
     GameEntity k = session.rand.pickFrom(PotentialSprite.prototyping_objects);
     k.session = session;
 
@@ -195,9 +146,9 @@ Player randomPlayerWithClaspect(Session session, SBURBClass c, Aspect a, [Moon m
 
     if(m == null) {
         m = session.rand.pickFrom(session.moons);
-        //print("setting random moon to $m");
+        //;
     }else {
-       // print("making player with set moon of $m");
+       // ;
     }
     Player p = new Player(session, c, a, k, m, gd);
     p.decideTroll();
@@ -245,7 +196,7 @@ Player randomSpacePlayer(Session session) {
     removeFromArray(c, session.available_classes_players);
     Aspect a = Aspects.SPACE;
     removeFromArray(a, session.available_aspects);
-    return randomPlayerWithClaspect(session, c, a,session.prospit);
+    return randomPlayerWithClaspect(session, c, a);
 }
 
 
@@ -255,19 +206,21 @@ Player randomTimePlayer(Session session) {
     removeFromArray(c, session.available_classes_players);
     Aspect a = Aspects.TIME;
     removeFromArray(a, session.available_aspects);
-    return randomPlayerWithClaspect(session, c, a, session.derse);
+    return randomPlayerWithClaspect(session, c, a);
 }
 
 
 ///takes list of players adn aspect i am looking for
 Player findAspectPlayer(List<GameEntity> playerList, Aspect aspect) {
-    if(curSessionGlobalVar.mutator.lightField) return curSessionGlobalVar.mutator.inSpotLight;
+    if(playerList.isEmpty) return null;
+    Session session = playerList.first.session;
+    if(session.mutator.lightField) return session.mutator.inSpotLight;
     for (int i = 0; i < playerList.length; i++) {
         GameEntity g = playerList[i]; //could be a sprite
         if (g is Player) {
             Player p = playerList[i];
             if (p.aspect == aspect) {
-                ////print("Found " + aspect + " player");
+                ////;
                 return p;
             }
         }
@@ -277,14 +230,17 @@ Player findAspectPlayer(List<GameEntity> playerList, Aspect aspect) {
 
 
 List<Player> findAllAspectPlayers(List<GameEntity> playerList, Aspect aspect) {
-    if(curSessionGlobalVar.mutator.lightField && curSessionGlobalVar.mutator.inSpotLight != null) return [curSessionGlobalVar.mutator.inSpotLight];
+    if(playerList.isEmpty) return <Player>[];
+    Session session = playerList.first.session;
+
+    if(session.mutator.lightField && session.mutator.inSpotLight != null) return [session.mutator.inSpotLight];
     List<Player> ret = <Player>[];
     for (int i = 0; i < playerList.length; i++) {
         GameEntity g = playerList[i]; //could be a sprite, only work for player
         if (g is Player) {
             Player p = playerList[i];
             if (p.aspect == aspect) {
-                ////print("Found " + aspect + " player");
+                ////;
                 ret.add(p);
             }
         }
@@ -302,7 +258,7 @@ Player findClaspectPlayer(List<GameEntity> playerList, SBURBClass class_name, As
         if (g is Player) {
             Player p = playerList[i];
             if (p.class_name == class_name && p.aspect == aspect) {
-                ////print("Found " + class_name + " player");
+                ////;
                 return p;
             }
         }
@@ -317,7 +273,7 @@ Player findClassPlayer(List<GameEntity> playerList, SBURBClass class_name) {
         if (g is Player) {
             Player p = playerList[i];
             if (p.class_name == class_name) {
-                ////print("Found " + class_name + " player");
+                ////;
                 return p;
             }
         }
@@ -334,7 +290,6 @@ Player findMVP(List<Player> playerList) {
         if (p.grist > strongest.grist) {
             strongest = p;
         }
-
     }
     return strongest;
 }
@@ -349,7 +304,6 @@ Player findStrongestPlayer(List<Player> playerList) {
         if (p.getStat(Stats.POWER) > strongest.getStat(Stats.POWER)) {
             strongest = p;
         }
-
     }
     return strongest;
 }
@@ -379,7 +333,7 @@ List<Player> findDoomedPlayers(List<Player> playerList) {
 
 //TODO shove this somewhere mroe useful, rename so not just players
 //take in a generic type as long as it extends generic and return a generic type, you get mix of sprites and players, returns that way.i hope
-List<T> findLivingPlayers<T extends GameEntity> (List<T> playerList){
+List<T> findLiving<T extends GameEntity> (List<T> playerList){
     List<T> ret = new List<T>();
     for (int i = 0; i < playerList.length; i++) {
         if (!playerList[i].dead || (playerList[i].session.mutator.doomField && playerList[i].dead )) { //the dead are alive.
@@ -523,7 +477,7 @@ Player clonePlayer(Player player, Session session, bool isGuardian) {
         clone.guardian = g;
         g.guardian = clone;
     }
-    //print("returning clone $clone");
+    //;
     return clone;
 }
 

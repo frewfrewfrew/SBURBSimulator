@@ -2,15 +2,20 @@ import 'dart:html';
 import '../../SBURBSim.dart';
 import '../../navbar.dart';
 import '../../v2.0/char_creator_helper.dart';
+import "dart:async";
 
 CharCreatorController self;
-void main()
+//only one session on this page
+Session session;
+Future<Null> main() async
+
 {
   loadNavbar();
+  await globalInit();
   window.onError.listen((Event event){
     ErrorEvent e = event as ErrorEvent;
     //String msg, String url, lineNo, columnNo, error
-    printCorruptionMessage(e);//(e.message, e.path.toString(), e.lineno.toString(), e.colno.toString(), e.toString());
+
     return;
   });
   new CharCreatorController();
@@ -22,22 +27,32 @@ void main()
     self.initial_seed = tmp;
   }
   querySelector("#button2").onClick.listen((Event e) => newPlayer());
+  querySelector("#buttonNotVoid").onClick.listen((Event e) => newPlayerButNotVoid());
+
   querySelector("#button").onClick.listen((Event e) => renderURLToSendPlayersIntoSBURB());
-  SimController.instance.startSession();
-  loadFuckingEverything("I really should stop doing this",renderPlayersForEditing );
+  session = new Session(SimController.instance.initial_seed);
+  checkEasterEgg(session);
+  session.startSession();
+  loadFuckingEverything(session,"I really should stop doing this",renderPlayersForEditing );
 }
 
 void newPlayer() {
+
   self.newPlayer();
 }
 
+void newPlayerButNotVoid() {
+
+  self.newPlayerButNotVoid();
+}
+
 void renderURLToSendPlayersIntoSBURB() {
-  //print("clicked render button");
+  //
   self.renderURLToSendPlayersIntoSBURB();
 }
 
 void renderPlayersForEditing() {
-  self.renderPlayersForEditing();
+  self.renderPlayersForEditing(session);
 }
 /*
   doesn't do sim stuff, it's overrides are errors, but need it to do a few other things. whatever.
@@ -51,44 +66,64 @@ class CharCreatorController extends SimController {
 
   //don't actually start the session, but get players ready.
   @override
-  void easterEggCallBack() {
-    initializePlayers(curSessionGlobalVar.players, curSessionGlobalVar);
-    charCreatorHelperGlobalVar = new CharacterCreatorHelper(curSessionGlobalVar.players);
+  void easterEggCallBack(Session session) {
+    //initializePlayers(session.players, session);
+    charCreatorHelperGlobalVar = new CharacterCreatorHelper(session.players);
 
   }
 
   void updateRender(){
-    for(num i = 0; i<curSessionGlobalVar.players.length; i++){
-      var player = curSessionGlobalVar.players[i];
+    for(num i = 0; i<session.players.length; i++){
+      var player = session.players[i];
       charCreatorHelperGlobalVar.redrawSinglePlayer(player);
     }
   }
 
 
 
-  void renderPlayersForEditing(){
-    charCreatorHelperGlobalVar.drawAllPlayers();
+  void renderPlayersForEditing(Session session){
+    charCreatorHelperGlobalVar.drawAllPlayers(session);
     updateRender();
     (querySelector("#button")as ButtonElement).disabled =false;
   }
 
   void renderURLToSendPlayersIntoSBURB(){
-    //print("getting ready to grab players");
+    //
     grabAllPlayerInterests();
     grabCustomChatHandles();
     numURLS ++;
-    //print("getting ready to generate urls");
-    String html = "<Br><br><a href = 'index2.html?seed=$initial_seed&${generateURLParamsForPlayers(curSessionGlobalVar.players,true)}' target='_blank'>Be Responsible For Sending Players into SBURB? (Link $numURLS)</a>  | <a href = 'rare_session_finder.html?seed=$initial_seed&${generateURLParamsForPlayers(curSessionGlobalVar.players,true)}' target='_blank'>Have AB find different ways a session with these players could go?</a>";
-    if(curSessionGlobalVar.players.length == 1)  html = "<Br><br><a href = 'dead_index.html?seed=$initial_seed&${generateURLParamsForPlayers(curSessionGlobalVar.players,true)}' target='_blank'>Be Responsible For Sending Player into a Dead Session? (Link $numURLS)</a> | <a href = 'dead_session_finder.html?seed=$initial_seed&${generateURLParamsForPlayers(curSessionGlobalVar.players,true)}' target='_blank'>Have AB try to find a dead session where this player wins?</a>";
+    //
+    String html = "<Br><br><a href = 'index2.html?seed=$initial_seed&${generateURLParamsForPlayers(session.players,true)}' target='_blank'>Be Responsible For Sending Players into SBURB? (Link $numURLS)</a>  | <a href = 'rare_session_finder.html?seed=$initial_seed&${generateURLParamsForPlayers(session.players,true)}' target='_blank'>Have AB find different ways a session with these players could go?</a>";
+    if(session.players.length == 1)  html = "<Br><br><a href = 'dead_index.html?seed=$initial_seed&${generateURLParamsForPlayers(session.players,true)}' target='_blank'>Be Responsible For Sending Player into a Dead Session? (Link $numURLS)</a> | <a href = 'dead_session_finder.html?seed=$initial_seed&${generateURLParamsForPlayers(session.players,true)}' target='_blank'>Have AB try to find a dead session where this player wins?</a>";
+
+    DivElement deprecated = new DivElement();
+    querySelector("#character_creator").append(deprecated);
+
 
     appendHtml(querySelector("#character_creator"),html);
   }
 
   void newPlayer(){
-    Player p = randomPlayerWithClaspect(curSessionGlobalVar,SBURBClassManager.PAGE, Aspects.VOID);
-    curSessionGlobalVar.players.add(p);
-    if(curSessionGlobalVar.players.length == 13) window.alert("Like, go ahead and all, but this is your Official Warning that the sim is optimized for no more than 12 player sessions.");
-    charCreatorHelperGlobalVar.drawSinglePlayerForHelper(p);
+    Player p = randomPlayerWithClaspect(session,SBURBClassManager.PAGE, Aspects.VOID);
+
+    session.players.add(p);
+
+    if(session.players.length == 13) window.alert("Like, go ahead and all, but this is your Official Warning that the sim is optimized for no more than 12 player sessions.");
+    p.canvas = null;
+    p.renderSelf("newPlayer");
+
+    charCreatorHelperGlobalVar.drawSinglePlayerForHelper(session,p);
+
+
+  }
+
+  void newPlayerButNotVoid(){
+    Player p = randomPlayer(session);
+    session.players.add(p);
+    if(session.players.length == 13) window.alert("Like, go ahead and all, but this is your Official Warning that the sim is optimized for no more than 12 player sessions.");
+    p.canvas = null;
+    p.renderSelf("newPlayer");
+    charCreatorHelperGlobalVar.drawSinglePlayerForHelper(session,p);
 
   }
 
@@ -101,15 +136,15 @@ class CharCreatorController extends SimController {
 
 //among other things, having chat handles in plain text right in the url lets people know what to expect.
   void grabCustomChatHandles(){
-    for(num i = 0; i<curSessionGlobalVar.players.length; i++){
-      grabCustomChatHandleForPlayer(curSessionGlobalVar.players[i]);
+    for(num i = 0; i<session.players.length; i++){
+      grabCustomChatHandleForPlayer(session.players[i]);
     }
   }
 
 
   void grabAllPlayerInterests(){
-    for(num i = 0; i<curSessionGlobalVar.players.length; i++){
-      grabPlayerInterests(curSessionGlobalVar.players[i]);
+    for(num i = 0; i<session.players.length; i++){
+      grabPlayerInterests(session.players[i]);
     }
   }
 

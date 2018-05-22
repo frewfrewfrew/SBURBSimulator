@@ -7,6 +7,7 @@ import '../../SBURBSim.dart';
 import '../../navbar.dart';
 import "../Misc/DeadSimController.dart";
 import 'dart:html';
+import "dart:async";
 abstract class DeadAuthorBot extends DeadSimController {
 
   List<int> sessionsSimulated = [];
@@ -30,7 +31,8 @@ abstract class DeadAuthorBot extends DeadSimController {
     setHtml(SimController.instance.storyElement, "");
     numSimulationsToDo = int.parse((querySelector("#num_sessions")as InputElement).value);
     (querySelector("#button")as ButtonElement).disabled =true;
-    startSession(); //my callback is what will be different
+    Session session = new DeadSession(SimController.instance.initial_seed);
+    startSessionThenSummarize(session);
   }
 
 
@@ -38,44 +40,38 @@ abstract class DeadAuthorBot extends DeadSimController {
 
 
 
-  @override
-  void checkSGRUB() {
-    throw "ab does not do this";
-  }
+
 
 
   @override
-  void easterEggCallBack() {
-    DeadSession ds = (curSessionGlobalVar as DeadSession);
-    initializePlayers(curSessionGlobalVar.players,curSessionGlobalVar); //need to redo it here because all other versions are in case customizations
+  void easterEggCallBack(Session session) {
+    DeadSession ds = (session as DeadSession);
+    //initializePlayers(session.players,session); //need to redo it here because all other versions are in case customizations
     ds.players[0].deriveLand = false;
-    ds.players[0].relationships.add(new Relationship(ds.players[0], -999, ds.metaPlayer)); //if you need to talk to anyone, talk to metaplayer.
-    ds.metaPlayer.relationships.add(new Relationship(ds.metaPlayer, -999, ds.players[0])); //if you need to talk to anyone, talk to metaplayer.
+    //ds.players[0].relationships.add(new Relationship(ds.players[0], -999, ds.metaPlayer)); //if you need to talk to anyone, talk to metaplayer.
+    //ds.metaPlayer.relationships.add(new Relationship(ds.metaPlayer, -999, ds.players[0])); //if you need to talk to anyone, talk to metaplayer.
 
     if(doNotRender == true){
-      intro();
+      session.intro();
     }else{
-      load(curSessionGlobalVar.players, getGuardiansForPlayers(curSessionGlobalVar.players),""); //in loading.js
+      load(SimController.instance.currentSessionForErrors,session.players, getGuardiansForPlayers(session.players),""); //in loading.js
     }
   }
 
-  @override
-  void easterEggCallBackRestart() {
-    initializePlayers(curSessionGlobalVar.players,curSessionGlobalVar); //need to redo it here because all other versions are in case customizations
-    intro();
+  Future<Null> startSessionThenSummarize(Session session) async{
+    print("starting the session sane style");
+    checkEasterEgg(session);
+    await session.startSession();
+    print("I think the session stopped!");
+    summarizeSession(session);
   }
 
-
-  //AB's reckoning is like the normal one, but if the session ends at the recknoing, ab knows what to do.
   @override
-  void reckoning() {
-    //unlike regular rare session finder it is ALWAYS over here. simple.
-    Scene s = new DeadReckoning(curSessionGlobalVar);
-    s.trigger(curSessionGlobalVar.players);
-    s.renderContent(curSessionGlobalVar.newScene(s.runtimeType.toString(),));
-    //renderAfterlifeURL();
-    summarizeSession(curSessionGlobalVar);
+  void easterEggCallBackRestart(Session session) {
+    //initializePlayers(session.players,session); //need to redo it here because all other versions are in case customizations
+    session.intro();
   }
+
 
 
 
@@ -109,9 +105,10 @@ abstract class DeadAuthorBot extends DeadSimController {
 
 
   @override
-  void recoverFromCorruption() {
-    print("AB thinks she should check a new session after finding a shitty crashed session");
-    summarizeSession(curSessionGlobalVar); //well...THAT session ended
+  void recoverFromCorruption(Session session) {
+    session.simulationComplete("Crashed in AB");
+    summarizeSession(session); //well...THAT session ended
+    //summarizeSession(session); //well...THAT session ended
   }
 
   //this will be called once session has ended. it's up to each child to know what to do here.
@@ -123,16 +120,6 @@ abstract class DeadAuthorBot extends DeadSimController {
   @override
   void renderScratchButton(Session session) {
     needToScratch = true;
-  }
-
-
-
-
-  @override
-  void restartSession() {
-    setHtml(SimController.instance.storyElement, '');
-    window.scrollTo(0, 0);
-    checkEasterEgg(easterEggCallBackRestart,null);
   }
 
   @override

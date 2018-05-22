@@ -32,7 +32,7 @@ class Strife {
             div.append(innerDiv);
             button.onClick.listen((e) {
                 String display = innerDiv.style.display;
-                ////print("display is $display");
+                ////;
                 if (display == "none" || display.isEmpty) {
                     show(innerDiv);
                     button.setInnerHtml("Unview Strife!");
@@ -56,7 +56,7 @@ class Strife {
                 winner.won = true;
                 describeEnding(winner); //will call processEnding.
             } else {
-                //print("Strife ended with no clear winner");
+                describeEnding(null); //will call processEnding.
             }
         } else {
             turnsPassed ++;
@@ -81,7 +81,7 @@ class Strife {
         List<GameEntity> members = findMembersOfDenizenFight();
         if (members == null || members.length < 2) return; //not a denizen fight
         Player player = members[1];
-        ////print("Player $player is dead: ${player.dead}");
+        ////;
         if (!player.dead) return; //you can't spare a player who won.
         if (player.grimDark >= 3) return; //deniznes will actually kill grim dark players.
         if (player.godDestiny && !player.godTier && player.rand.nextBool()) return; //less important to not kill you if you'll gain power from me doing it.
@@ -170,6 +170,11 @@ class Strife {
     void describeEnding( Team winner) {
         denizenManagesToNotKillYou(outerDiv); //only for player on denizen matches.
         processEnding();
+        if(winner == null) {
+            appendHtml(outerDiv, "<br><br>Huh. It ends in a draw.");
+            return;
+        }
+
         winner.level();
         winner.giveGristFromTeams(teams); //will filter out 'me'
         //TODO give winner any ITEMS (such as QUEENS RING) as well. Item should inherit from GameEntity. Maybe. It does now.
@@ -220,6 +225,7 @@ class Strife {
         List<GameEntity> members = findMembersOfDenizenFight();
         Denizen denizen = members[0];
         Player player = members[1];
+        player.makeAlive();
         appendHtml(div, "<Br><Br>" + denizen.name + " decides that the " +
             player.htmlTitleBasic() +
             " is being a little baby who poops hard in their diapers and are in no way ready for this fight. The Denizen recommends that they come back after they mature a little bit. The " +
@@ -286,12 +292,28 @@ class Team implements Comparable<Team> {
     String name = "";
     bool canAbscond = true; //sometimes you are forced to keep fighting.
     Team.withName(this.name, this.session, this.members){
+        getCompanionsForMembers();
         resetFraymotifsForMembers();
     }
 
     Team(this.session, this.members) {
         name = "The ${GameEntity.getEntitiesNames(members)}";
+        getCompanionsForMembers();
         resetFraymotifsForMembers(); //usable on team creation
+    }
+
+    void getCompanionsForMembers() {
+        List<GameEntity> toAdd = new List<GameEntity>(); //don't add shit to an array while you loop on it, dunkass.
+        for(GameEntity g in members) {
+            for(GameEntity companion in g.companionsCopy) {
+                if(companion.dead == false && !members.contains(companion)) { //don't readd it if they were already there
+                    //session.logger.info("AB: getting companions for members in a strife");
+                    toAdd.add(companion);
+                }
+            }
+        }
+        //;
+        members.addAll(toAdd);
     }
 
 
@@ -326,6 +348,10 @@ class Team implements Comparable<Team> {
         List<Team> otherTeams = getOtherTeams(teams);
         //loop on all members each member takes turn.
         for (GameEntity member in members) { //member will take care of checking if they are absconded or dead.
+            if(numTurnOn == 0) {
+                //start healed
+                member.setStat(Stats.CURRENT_HEALTH, member.getStat(Stats.HEALTH));
+            }
             member.takeTurn(div, this, otherTeams);
         }
     }
@@ -405,11 +431,10 @@ class Team implements Comparable<Team> {
     }
 
     void killEveryone(String reason) {
-        //print("going to kill everyone because: $reason"); //string interpolation makes that print statement just so...so great.
+        //; //string interpolation makes that print statement just so...so great.
         for (GameEntity ge in getLivingMinusAbsconded()) {
-            //print("making $ge dead");
-            ge.makeDead(reason);
-
+            //;
+            ge.makeDead(reason, ge); //rocks fell or some shit no looting
             ///bluh, no way to talk about prophecies here.
         }
     }

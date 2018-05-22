@@ -5,19 +5,19 @@ import 'dart:html';
 import 'dart:async';
 
 AfterlifeController self;
+Session session;
 
-void main()
-{
+Future<Null> main() async {
   window.onError.listen((Event event){
     ErrorEvent e = event as ErrorEvent;
     //String msg, String url, lineNo, columnNo, error
-    printCorruptionMessage(e);//(e.message, e.path.toString(), e.lineno.toString(), e.colno.toString(), e.toString());
+    printCorruptionMessage(SimController.instance.currentSessionForErrors,e);//(e.message, e.path.toString(), e.lineno.toString(), e.colno.toString(), e.toString());
     return;
   });
 
   new AfterlifeController();
-  globalInit(); // initialise classes and aspects if necessary
-  curSessionGlobalVar = new Session(-13);
+  await globalInit(); // initialise classes and aspects if necessary
+  session = new Session(-13);
   self = SimController.instance;
   if(getParameterByName("seed",null) != null){
     self.initial_seed = int.parse(getParameterByName("seed",null));
@@ -25,10 +25,10 @@ void main()
     int tmp = getRandomSeed();
     self.initial_seed = tmp;
   }
-  self.loadPlayers();
+  self.loadPlayers(session);
   globalCallBack = self.renderGhosts;
-  print("going to load images for ${curSessionGlobalVar.players} players");
-  load(curSessionGlobalVar.players, [], "ghostNewBullshitReallyIShouldJustBeUsingCallbackAlone");
+  ;
+  load(session, session.players, [], "ghostNewBullshitReallyIShouldJustBeUsingCallbackAlone");
 
 
 }
@@ -44,15 +44,15 @@ class AfterlifeController extends SimController {
   AfterlifeController() : super();
 
 
-  void loadPlayers(){
-    curSessionGlobalVar.players = getReplayers(curSessionGlobalVar);
-    for(num i = 0; i<curSessionGlobalVar.players.length; i++){
-      curSessionGlobalVar.players[i].ghost = true; //not storing that as a bool. 'cause fuck you,thats why'
+  void loadPlayers(Session session){
+    session.players = getReplayers(session);
+    for(num i = 0; i<session.players.length; i++){
+      session.players[i].ghost = true; //not storing that as a bool. 'cause fuck you,thats why'
     }
   }
 
   void renderSingleGhost(Player ghost, int i) {
-    //print("rendering ghost");
+    //;
     Element div = querySelector("#afterlifeViewer");
     String html = "<div class = 'eulogy'><div class = 'eulogy_text'>The " + ghost.htmlTitle() + " died " + ghost.causeOfDeath + ".";
     if(ghost.causeOfDrain != null && ghost.causeOfDrain.isNotEmpty){
@@ -64,15 +64,15 @@ class AfterlifeController extends SimController {
     appendHtml(div, html);
     CanvasElement canvas = querySelector("#canvas"+ divID);
 
-    var pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+    var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
     Drawing.drawSprite(pSpriteBuffer,ghost);
 
     Drawing.copyTmpCanvasToRealCanvasAtPos(canvas, pSpriteBuffer,0,0);
   }
 
   void renderGhosts() {
-    for(int i =0; i<curSessionGlobalVar.players.length; i++) {
-      Player p = curSessionGlobalVar.players[i];
+    for(int i =0; i<session.players.length; i++) {
+      Player p = session.players[i];
       renderSingleGhost(p, i);
     }
   }

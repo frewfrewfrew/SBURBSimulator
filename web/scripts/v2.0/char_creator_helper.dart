@@ -17,19 +17,19 @@ class CharacterCreatorHelper {
         div = querySelector("#character_creator");
     }
 
-    void drawAllPlayers() {
+    void drawAllPlayers(Session session) {
         bloodColors.add("#ff0000"); //for humans
         for (int i = 0; i < this.players.length; i++) {
-            this.drawSinglePlayerForHelper(this.players[i]);
+            this.drawSinglePlayerForHelper(session, this.players[i]);
         }
     }
 
-    void draw12PlayerSummaries() {
+    void draw12PlayerSummaries(Session session) {
         int start = this.player_index;
         int num_at_a_time = 12;
         for (int i = start; i < start + num_at_a_time; i++) {
             if (this.players.length > i) {
-                this.drawSinglePlayerSummary(this.players[i]);
+                this.drawSinglePlayerSummary(session, this.players[i]);
                 this.player_index++; //okay to mod this in the loop because only initial i value relies on it.
             } else {
                 //no more players.
@@ -39,7 +39,7 @@ class CharacterCreatorHelper {
         }
     }
 
-    void drawSinglePlayerSummary(Player player) {
+    void drawSinglePlayerSummary(Session session, Player player) {
         ////print("drawing: " + player.title());
         String str =
             "<div class='standAloneSummary' id='createdCharacter${player.id}'>";
@@ -53,19 +53,19 @@ class CharacterCreatorHelper {
         this.createSummaryOnCanvas(player);
         show(querySelector(
             "#canvasSummary${player.id}")); //unlike char creator, always show
-        this.wireUpDataBox(player);
+        this.wireUpDataBox(session,player);
     }
 
     //TODO why the fuck did this have the same name as a handle_sprites function?
-    void drawSinglePlayerForHelper(Player player) {
+    void drawSinglePlayerForHelper(Session session, Player player) {
         //print("drawing: " + player.title());
         String str = "";
         String divId = player.id.toString();
-        if (curSessionGlobalVar.session_id != 612 &&
-            curSessionGlobalVar.session_id != 613 &&
-            curSessionGlobalVar.session_id != 413 &&
-            curSessionGlobalVar.session_id != 1025 &&
-            curSessionGlobalVar.session_id != 111111) player.chatHandle = "";
+        if (session.session_id != 612 &&
+            session.session_id != 613 &&
+            session.session_id != 413 &&
+            session.session_id != 1025 &&
+            session.session_id != 111111) player.chatHandle = "";
         //divId = divId.replace(new RegExp(r"""\s+""", multiLine:true), '');
         str += "<div class='createdCharacter' id='createdCharacter${player.id}'>";
         str += "<canvas class = 'createdCharacterCanvas' id='canvas" +
@@ -95,26 +95,21 @@ class CharacterCreatorHelper {
         if (p != null) { p..anchor.style.top = "5px"; }
 
         player.initSpriteCanvas();
-        String canvasHTML = "<br><canvas style='display:none' id='" +
-            player.spriteCanvasID +
-            "' width='400' height='300'>  </canvas>";
-        appendHtml(querySelector("#playerSprites"), canvasHTML);
+        player.renderSelf("drawSinglePlayerFor");
 
-        player.renderSelf();
-
-        var canvas = querySelector("#canvas" + divId);
+        var canvas = player.canvas;
         //drawSinglePlayer(canvas, player);
         var p1SpriteBuffer =
-        Drawing.getBufferCanvas(querySelector("#sprite_template"));
+        Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         Drawing.drawSpriteFromScratch(p1SpriteBuffer, player);
         //drawBG(p1SpriteBuffer, "#ff9999", "#ff00ff");
         Drawing.copyTmpCanvasToRealCanvasAtPos(canvas, p1SpriteBuffer, 0, 0);
-        this.wireUpTabs(player);
+        this.wireUpTabs(session,player);
         this.wireUpPlayerDropDowns(player);
         this.wireUpTextBoxes(player);
         this.wireUpCheckBoxes(player);
         this.createSummaryOnCanvas(player);
-        this.wireUpDataBox(player);
+        this.wireUpDataBox(session,player);
         this.syncPlayerToFields(player);
     }
 
@@ -281,7 +276,7 @@ class CharacterCreatorHelper {
         CanvasElement canvas = querySelector("#canvasSummarycanvas${player.id}");
         CanvasRenderingContext2D ctx = canvas.getContext("2d");
         CanvasElement pSpriteBuffer =
-        Drawing.getBufferCanvas(querySelector("#sprite_template"));
+        Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         ctx.clearRect(0, 0, 600, 300);
         Drawing.drawSpriteFromScratch(pSpriteBuffer, player);
         Drawing.copyTmpCanvasToRealCanvasAtPos(canvas, pSpriteBuffer, -30, 0);
@@ -358,7 +353,7 @@ class CharacterCreatorHelper {
     }
 
     void redrawSinglePlayer(Player player) {
-        player.renderSelf();
+        player.renderSelf("redrawSinglePlayer");
         String divId = "canvas${player.id}";
         //divId = divId.replaceAll(new RegExp(r"""\s+""", multiLine:true), ''); //TODO what is going on here?
         var canvas = querySelector("#" + divId);
@@ -483,6 +478,10 @@ class CharacterCreatorHelper {
             return "A Witch increases their own associated aspect and starts with a lot of it. They are stronger around others. They feel less of the positive effects of their Aspect, but can twist weakness into strength.";
         if (specific == "Page")
             return "A Page distributes their associated aspect to the entire party. They start with very little of their aspect and must earn it. They can not do quests on their own, but gain power very quickly. They give a  boost to the positive parts of their Aspect, while protecting others from the negative parts.";
+        if (specific == "Smith")
+            return "A Smith forges their associated aspect for their own benefit. They start with very little of their aspect and must create it.";
+
+
         if (specific == "Waste")
             return "Wastes gain no benefits or detriments related to their Aspect. They are associated with extreme highs and lows, either entirely avoiding their aspect or causing great destruction with it. They are assholes who won't stop hacking my damn code.";
         if (specific == "Scribe")
@@ -498,12 +497,12 @@ class CharacterCreatorHelper {
         if (specific == "Muse")
             return "A Muse is the most passive possible class. They take on all the negatives of their Aspect and give the positives to others. They do not start with a lot of their Aspect.";
         if (specific == "Lord")
-            return "A Lord is the most active possible class. They hoard on all the postives of their Aspect and delegate the negatives to others. They start with a lot of their Aspect.";
+            return "A Lord is the most active possible class. They hoard on all the postives of their Aspect and delegate the negatives to others. They start with a lot of their Aspect. They have special minions called Leprechauns.";
 
         return "Class help text not found for " + specific + ".";
     }
 
-    void wireUpDataBox(Player player) {
+    void wireUpDataBox(Session session, Player player) {
         this.writePlayerToDataBox(player);
         ButtonElement copyButton = querySelector("#copyButton${player.id}");
         ButtonElement loadButton = querySelector("#loadButton${player.id}");
@@ -525,13 +524,16 @@ class CharacterCreatorHelper {
                 String s = getParameterByName("s", bs);
                 String x = (getParameterByName("x", bs));
                 //TODO oh god why ar eall these null???
-                //print("b: $b");
-                //print("s: $s");
-                //print("x: $x");
+                //;
+                //;
+                //;
 
-                List<Player> players = dataBytesAndStringsToPlayers(b, s, x); //technically an array of one players.;
+                List<Player> players = dataBytesAndStringsToPlayers(session,b, s, x); //technically an array of one players.;
                 //print("Player class name: " + players[0].class_name.name);
+
                 player.copyFromPlayer(players[0]);
+                player.session = session;
+                player.syncToSessionMoon();
                 that.redrawSinglePlayer(player);
                 //should have had wireUp methods to the fields to begin with. looks like I gotta pay for pastJR's mistakes.
             });
@@ -726,7 +728,7 @@ class CharacterCreatorHelper {
         });
     }
 
-    void wireUpTabs(Player player) {
+    void wireUpTabs(Session session, Player player) {
         Element ddTab = querySelector("#ddTab${player.id}");
         Element cbTab = querySelector("#cbTab${player.id}");
         Element tbTab = querySelector("#tbTab${player.id}");
@@ -746,7 +748,7 @@ class CharacterCreatorHelper {
             var monster = window.confirm("Delete player? (You monster)");
             if (monster) {
                 hide(querySelector("#createdCharacter${player.id}"));
-                removeFromArray(player, curSessionGlobalVar.players);
+                removeFromArray(player, session.players);
             }
         });
         ddTab.onClick.listen((Event e) {
@@ -939,7 +941,7 @@ class CharacterCreatorHelper {
     String drawInterestDropDown(InterestCategory category, int num, Player player) {
         String html = "<select id = 'interestDrop$num${player.id}' name='interestDrop$num${player.id}'>";
         List<String> interestsInCategory = category.copyOfInterestStrings;
-        ////print("Interests in category $category are $interestsInCategory");
+        ////;
         String interestToCheck = player.interest1.name;
         if (num == 2) interestToCheck = player.interest2.name;
         for (int i = 0; i < interestsInCategory.length; i++) {

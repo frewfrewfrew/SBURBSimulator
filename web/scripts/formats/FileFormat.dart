@@ -3,7 +3,11 @@ import 'dart:convert';
 import 'dart:html';
 import 'dart:typed_data';
 
+import '../includes/path_utils.dart';
 import '../includes/predicates.dart';
+import 'Formats.dart';
+
+typedef void LoadButtonCallback<T>(T object, String filename);
 
 abstract class FileFormat<T,U> {
     List<String> extensions = <String>[];
@@ -27,14 +31,24 @@ abstract class FileFormat<T,U> {
     Future<U> requestFromUrl(String url);
     Future<T> requestObjectFromUrl(String url) async => read(await requestFromUrl(url));
 
-    static Element loadButton<T,U>(FileFormat<T,U> format, Lambda<T> callback, {bool multiple = false, String caption = "Load file"}) {
+    static Element loadButton<T,U>(FileFormat<T,U> format, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file"}) {
         return loadButtonVersioned(<FileFormat<T,U>>[format], callback, multiple:multiple, caption:caption);
     }
 
-    static Element loadButtonVersioned<T,U>(List<FileFormat<T,U>> formats, Lambda<T> callback, {bool multiple = false, String caption = "Load file"}) {
+    static Element loadButtonVersioned<T,U>(List<FileFormat<T,U>> formats, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file"}) {
         Element container = new DivElement();
 
         FileUploadInputElement upload = new FileUploadInputElement()..style.display="none"..multiple=multiple;
+
+        Set<String> extensions = new Set<String>();
+
+        for (FileFormat<T,U> format in formats) {
+            extensions.addAll(Formats.getExtensionsForFormat(format));
+        }
+
+        if (!extensions.isEmpty) {
+            upload.accept = extensions.map((String ext) => ".$ext").join(",");
+        }
 
         upload..onChange.listen((Event e) async {
             if (upload.files.isEmpty) { return; }
@@ -43,7 +57,7 @@ abstract class FileFormat<T,U> {
                 for (FileFormat<T, U> format in formats) {
                     U output = await format.readFromFile(file);
                     if (output != null) {
-                        callback(await format.read(output));
+                        callback(await format.read(output), file.name);
                         break;
                     }
                 }
@@ -155,4 +169,25 @@ abstract class StringFileFormat<T> extends FileFormat<T,String> {
     Future<String> requestFromUrl(String url) async {
         return HttpRequest.getString(url);
     }
+}
+
+// this is a little weird and sort of a special case, mostly for streaming audio
+abstract class ElementFileFormat<T> extends FileFormat<T,String> {
+    @override
+    bool identify(String data) => true;
+
+    @override
+    Future<String> requestFromUrl(String url) async => url;
+
+    @override
+    Future<String> readFromFile(File file) => throw "Element format doesn't read from files";
+
+    @override
+    Future<String> dataToDataURI(String data) async => data;
+
+    @override
+    Future<String> fromBytes(ByteBuffer buffer) => throw "Element format doesn't read from buffers";
+
+    @override
+    String header() => "";
 }

@@ -5,6 +5,16 @@ import "../../../Lands/Reward.dart";
 import "../../../Lands/Quest.dart";
 
 class Bard extends SBURBClass {
+    @override
+    String sauceTitle = "Maestro";
+
+    //what sort of quests rewards do I get?
+    @override
+    double itemWeight = 0.01;
+    @override
+    double fraymotifWeight = 0.5;
+    @override
+    double companionWeight = 0.50;
 
     @override
     List<String> levels = ["SKAIA'S TOP IDOL", "POPSTAR BOPPER", "SONGSCUFFER"];
@@ -14,6 +24,9 @@ class Bard extends SBURBClass {
     List<String> postDenizenQuests = ["musing on the nature of death as they wander from desolate consort graveyard to desolate consort graveyard", "staring vacantly into the middle distance as every challenge that rises before them falls away before it even has a chance to do anything", "putting on a performance for a huge crowd of awestruck consorts and underlings", "playing pranks and generally messing around with the most powerful enemies left in the game"];
     @override
     List<String> handles = ["bat","benign", "blissful", "boisterous", "bonkers", "broken", "bizarre", "barking"];
+
+    List<String> bureaucraticBullshit = <String>["is posting bail after being in the wrong place in the wrong time.","was fined for being in the wrong place at a the wrong time.","was fined for causing 'a ruckus'. "];
+
 
     //for quests and shit
     @override
@@ -57,7 +70,7 @@ class Bard extends SBURBClass {
     void initializeItems() {
         items = new WeightedList<Item>()
         //things that let you destroy yourself.
-            ..add(new Item("Cod Piece",<ItemTrait>[ItemTraitFactory.CLOTH,ItemTraitFactory.LEGENDARY,ItemTraitFactory.FAKE, ItemTraitFactory.CLASSRELATED],abDesc:"God damn it, MI. "))
+            ..add(new Item("Cod Piece",<ItemTrait>[ItemTraitFactory.CLOTH,ItemTraitFactory.LEGENDARY,ItemTraitFactory.FAKE, ItemTraitFactory.CLASSRELATED, ItemTraitFactory.WOOD],abDesc:"God damn it, MI. "))
             ..add(new Item("Poisoned Candy",<ItemTrait>[ItemTraitFactory.CANDY, ItemTraitFactory.CLASSRELATED, ItemTraitFactory.POISON],shogunDesc: "Not So Sweet Treat",abDesc:"I guess CodTier is okay."))
             ..add(new Item("Cursed Lyre",<ItemTrait>[ItemTraitFactory.DOOMED,ItemTraitFactory.WOOD,ItemTraitFactory.CALMING, ItemTraitFactory.CLASSRELATED, ItemTraitFactory.MUSICAL],shogunDesc: "I Don’t Know What This Is Normally",abDesc:"I guess CodTier is okay. Sort of."))
             ..add(new Item("Snare Trap",<ItemTrait>[ItemTraitFactory.CLOTH,ItemTraitFactory.DOOMED, ItemTraitFactory.CLASSRELATED, ItemTraitFactory.RESTRAINING],shogunDesc: "The Perfect Trap",abDesc:"I guess CodTier is okay. But still. The actual codpiece. You fleshy meatbags and your weird shit."));
@@ -112,7 +125,7 @@ class Bard extends SBURBClass {
                 new Quest("A group of jubilant ${Quest.CONSORT}s are following the ${Quest.PLAYER1} around. It's kind of flattering, but it sure is drawing a lot of attention!"),
                 new Quest("Even more ${Quest.CONSORT} are following the ${Quest.PLAYER1} now, ${Quest.CONSORTSOUND}ing about how they defeated the ${Quest.DENIZEN}. Wow, this is actually kind of embarrasing. "),
                 new Quest("Oh god, somehow there are PARADE FLOATS involved now? The line of ${Quest.CONSORT}s have drawn a huge crowd to watch and ${Quest.CONSORTSOUND}.  It looks like whole roads are being blocked off by the event, and nobody is getting any work done. The entire day's productivity is destroyed, and it isn't even the ${Quest.PLAYER1}'s fault. ")        ],
-                new FraymotifReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
+                new RandomReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
 
             //front tail!!!  (seriously, daimidaler prince vs penguin empire was SO FUCKING WEIRD
             ..addFeature(new PostDenizenQuestChain("Behold the Glory of CodTier", [

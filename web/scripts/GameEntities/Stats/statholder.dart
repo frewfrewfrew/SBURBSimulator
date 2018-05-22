@@ -275,3 +275,31 @@ class CarapaceStatHolder extends ProphecyStatHolder<Carapace> {
         return val;
     }
 }
+
+
+
+class MagicalItemStatHolder<T extends MagicalItem> extends OwnedStatHolder<T> {
+
+    MagicalItemStatHolder(T owner):super(owner);
+
+    @override
+    double applyMore(Stat stat, double val, Iterable<Buff> relevantBuffs) {
+        val = super.applyMore(stat, val, relevantBuffs);
+        return val;
+    }
+
+    @override
+    void setBase(Stat key, num val) {
+        /*if (owner.session != null) {
+            owner.session.logger.error("SET $owner: $key = $val");
+        }*/
+        super.setBase(key, val);
+    }
+    @override
+    void addBase(Stat key, num val) {
+        /*if (owner.session != null) {
+            owner.session.logger.error("ADD $owner: $key += $val");
+        }*/
+        super.addBase(key, val);
+    }
+}

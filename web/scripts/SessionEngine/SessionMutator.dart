@@ -5,6 +5,7 @@ import "dart:html";
 //these are permanent modifications to sessions and their behavior
 //while the lesser shit that are one off things will be in the GainGnosis scenes themselves. (such as writing faqs)
 class SessionMutator {
+    double powerCoefficient = 10.0;
     int effectsInPlay = 0; //more there are, more likely session will crash.
     bool hopeField = false; //facts about session change
     bool breathField = false; //sets availability to true, will interact with npc quests eventually
@@ -20,7 +21,26 @@ class SessionMutator {
     bool spaceField = false; //exclusively controls combo endings .
     bool dreamField = false; //alchemy doesn't consume items, alchemy can happen as many times as you want.
 
-    static SessionMutator _instance;
+    @override
+    String toString() {
+        String ret = "Effects in Play: $effectsInPlay ";
+        if(hopeField) ret = "$ret hope";
+        if(breathField) ret = "$ret breath";
+        if(heartField) ret = "$ret heart";
+        if(voidField) ret = "$ret void";
+        if(lightField) ret = "$ret light";
+        if(bloodField) ret = "$ret blood";
+        if(lifeField) ret = "$ret life";
+        if(doomField) ret = "$ret doom";
+        if(rageField) ret = "$ret rage";
+        if(mindField) ret = "$ret mind";
+        if(timeField) ret = "$ret time";
+        if(spaceField) ret = "$ret space";
+        if(dreamField) ret = "$ret dream";
+
+        return ret;
+    }
+
     bool rapsAndLuckDisabled = false;
     num timeTillReckoning = 0;
     double gameEntityMinPower = 1.0;
@@ -40,13 +60,8 @@ class SessionMutator {
     MetaPlayerHandler metaHandler = new MetaPlayerHandler();
 
 
-    static getInstance() {
-        if (_instance == null) _instance = new SessionMutator();
-        return _instance;
-    }
 
     SessionMutator() {
-        _instance = this;
         Stats.POWER.minDerived = gameEntityMinPower;
         for (Aspect a in Aspects.all) {
             a.name = a.savedName; //AB is having none of your shenanigans.
@@ -60,7 +75,7 @@ class SessionMutator {
     bool hasSpotLight(Player player) {
         if (inSpotLight == null) return false;
         bool ret = player.id == inSpotLight.id;
-        //print("I was asked if ${player.title()} has the spotlight. I know ${inSpotLight.title()} does. I will return $ret");
+        //;
         return ret;
     }
 
@@ -68,6 +83,7 @@ class SessionMutator {
     //when a session inits, it asks if any of it's vars should have different intial values (like hope shit)
     void syncToSession(Session s) {
         s.sessionHealth = this.sessionHealth;
+        Stats.POWER.coefficient = powerCoefficient;
         s.minimumGristPerPlayer = this.minimumGristPerPlayer;
         s.expectedGristContributionPerPlayer = this.expectedGristContributionPerPlayer;
         s.goodFrogLevel = this.goodFrogLevel;
@@ -89,58 +105,35 @@ class SessionMutator {
     ///will both be called when the hope field is activated, and in any new sessions
     bool spawnQueen(Session s) {
         if (!hopeField) return false;
-        s.npcHandler.queensRing = new GameEntity("!!!RING!!! OMG YOU SHOULD NEVER SEE THIS!", s);
+        s.derseRing = new Ring.withoutOptionalParams("COMPLETELY FAKE RING",[ ItemTraitFactory.QUEENLY] );
         //The joke is that the hope player read the Enquiring Carapacian after some other player published the false story
         //you know, the one about the queen secretly being 3 salamanders in a robe.
-        s.npcHandler.queen = new Carapace("Three Salamanders In a Robe", s);
+        s.derse.queen = new Carapace("Three Salamanders In a Robe", s,Carapace.DERSE);
         Fraymotif f = new Fraymotif("Glub Glub Behold our Robes, Y/N?", 1);
         f.effects.add(new FraymotifEffect(Stats.POWER, 2, true));
         f.desc = " You wonder what the hell is going on. ";
         f.baseValue = -10; //will this make it heal you?
-        s.npcHandler.queensRing.fraymotifs.add(f);
-        s.npcHandler.queen.stats.setMap(<Stat, num>{Stats.HEALTH: 3, Stats.FREE_WILL: -100, Stats.POWER: 3});
+        s.derseRing.fraymotifs.add(f);
+        s.derse.queen.stats.setMap(<Stat, num>{Stats.HEALTH: 3, Stats.FREE_WILL: -100, Stats.POWER: 3});
         return true;
     }
 
     bool spawnKing(Session session) {
         if (!hopeField) return false;
-        session.npcHandler.kingsScepter = new GameEntity("!!!SCEPTER!!! OMG YOU SHOULD NEVER SEE THIS!", session);
+        session.derseScepter = new Scepter.withoutOptionalParams("COMPLETELY FAKE SCEPTER",[ ItemTraitFactory.KINGLY] );
         //if the queen is 3, the king is more.
-        session.npcHandler.king = new Carapace("13 Salamanders In a Robe", session);
+        session.battlefield.blackKing = new Carapace("13 Salamanders In a Robe", session,Carapace.DERSE);
         Fraymotif f = new Fraymotif("Glub Glub Behold our Robes, Y/N?", 1);
         f.effects.add(new FraymotifEffect(Stats.POWER, 2, true));
         f.desc = " You wonder what the hell is going on. ";
         f.baseValue = -10; //will this make it heal you?
-        session.npcHandler.queensRing.fraymotifs.add(f);
-        session.npcHandler.king.grist = 1000;
-        session.npcHandler.king.stats.setMap(<Stat, num>{Stats.HEALTH: 13, Stats.FREE_WILL: -100, Stats.POWER: 13});
+        session.derseScepter.fraymotifs.add(f);
+        session.battlefield.blackKing.grist = 1000;
+        session.battlefield.blackKing.stats.setMap(<Stat, num>{Stats.HEALTH: 13, Stats.FREE_WILL: -100, Stats.POWER: 13});
         return true;
     }
 
-    bool spawnJack(Session session) {
-        if (!hopeField) return false;
-        session.npcHandler.jack = new Carapace("Jack In a Clown Outfit", session);
-        //minLuck, maxLuck, hp, mobility, sanity, freeWill, power, abscondable, canAbscond, framotifs
-        session.npcHandler.jack.stats.setMap(<Stat, num>{Stats.MIN_LUCK: -500, Stats.MAX_LUCK: -500, Stats.SANITY: -10000, Stats.HEALTH: 5, Stats.FREE_WILL: -100, Stats.POWER: 5});
-        Fraymotif f = new Fraymotif("Stupid Dance", 1);
-        f.effects.add(new FraymotifEffect(Stats.POWER, 3, true));
-        f.baseValue = -10; //will this make it heal you?
-        f.desc = " Jack has never hated you more than he does now.";
-        session.npcHandler.jack.fraymotifs.add(f);
-        return true;
-    }
 
-    bool spawnDemocraticArmy(Session session) {
-        if (!hopeField) return false;
-        session.npcHandler.democraticArmy = new Carapace("Democratic Army", session); //doesn't actually exist till WV does his thing.
-        Fraymotif f = new Fraymotif("Democracy Charge MAXIMUM HOPE", 2);
-        f.effects.add(new FraymotifEffect(Stats.POWER, 3, true));
-        f.desc = " The people have chosen to Rise Up against their oppressors, with the players as their symbol of HOPE. ";
-        f.baseValue = 9001;
-        session.npcHandler.democraticArmy.fraymotifs.add(f);
-        session.npcHandler.democraticArmy.stats.setMap(<Stat, num>{Stats.MIN_LUCK: -500, Stats.MAX_LUCK: 9001, Stats.SANITY: 9001, Stats.HEALTH: 5, Stats.FREE_WILL: 9001, Stats.POWER: 9001});
-        return true;
-    }
 
     //TODO have variables that session can query to see if it needs to have alt behavior
 
@@ -169,7 +162,7 @@ class SessionMutator {
             p.godDestiny = false;
             p.grimDark = 1; //i  REALLY don't think they should be like this...
             p.ectoBiologicalSource = -612; //they really aren't from here. (this might even prevent any guardians showing up in future ecto scenes)
-            p.renderSelf();
+            p.renderSelf("bloodBS");
             p.land = null; //SBURB doesn't have a land for you.
             p.guardian = null;
         }
@@ -192,7 +185,7 @@ class SessionMutator {
             p.bloodColor = "#ff0000"; //we are ALL the same caste now.
             //need to have relationship with new null players
             p.relationships = <Relationship>[];
-            //print("Generating relationships for $p");
+            //;
             p.generateRelationships(s.players);
 
             for (Stat str in Stats.pickable) {
@@ -234,7 +227,7 @@ class SessionMutator {
 
         //such a bad idea. stop hurtin AB. SimController.instance.stopped = true; //so there is time to load. will still finish tick, so not instant. but should be enough
 
-        metaHandler.initalizePlayers(s);
+        metaHandler.initalizePlayers(s,false);
 
         s.timeTillReckoning += 20; //the ending can motherfucking wait for my revenge.
         String ret = "The ${activatingPlayer.htmlTitle()} can't stop laughing. They have peeled back the curtain and seen the layer of code underneath. ";
@@ -242,7 +235,7 @@ class SessionMutator {
         ret += " They change what they want, and set the stage for their revenge.  All they have to do is wait for the new Players to join. You suspect that things might get a little hard to share depending on how long they have to wait. They know the Reckoning won't happen in the mean time. ";
         globalCallBack = rageCallBack; //metaPlayers will just show up unannounced.
         //need to spawn these assholes, then set up a loading callback for them. they'll show up when they are ready.
-        load(metaHandler.metaPlayers, [], "thisReallyShouldn'tExistAnymoreButIAmLazy");
+        load(s,metaHandler.metaPlayers, [], "thisReallyShouldn'tExistAnymoreButIAmLazy");
 
         for (Player p in s.players) {
             p.makeMurderMode(); //you're all murder mode, but can you get teh meta players in time?
@@ -331,7 +324,6 @@ class SessionMutator {
                 independantDreamSelf.dreamSelf = false; //does not have a dream self
                 independantDreamSelf.session = s;
                 independantDreamSelf.id = independantDreamSelf.id + 3333;
-                independantDreamSelf.spriteCanvasID = null; //rendering yourself will reinit it
                 p.dreamSelf = false; //no more dream self, bro
                 newPlayers.add(independantDreamSelf);
                 ret += "<br>The ${independantDreamSelf.htmlTitle()}'s dream self awakens on ${independantDreamSelf.moon}.  It is now registered as a full Player, and is unaffected by the alterations to the Real Self's identity.  Does this make them the 'real' verson of the ${independantDreamSelf.htmlTitle()}? ";
@@ -342,12 +334,12 @@ class SessionMutator {
         //now includes clones.
         for (Player p in s.players) {
             p.generateRelationships(s.players);
-            p.renderSelf(); // either rendering for first time, or rerendering as new classpect
+            p.renderSelf("heartBS"); // either rendering for first time, or rerendering as new classpect
         }
         savedSession = s;
         //need to load the new images.
         globalCallBack = heartCallBack;
-        load(s.players, [], "thisReallyShouldn'tExistAnymoreButIAmLazy");
+        load(s,s.players, [], "thisReallyShouldn'tExistAnymoreButIAmLazy");
 
         return ret; //<--still return tho, not waiting on the async loading
     }
@@ -355,7 +347,7 @@ class SessionMutator {
     //yes, this isn't how it should work long term. might make a few blank scenes.
     String heartCallBack() {
         for (Player p in savedSession.players) {
-            p.renderSelf(); // either rendering for first time, or rerendering as new classpect
+            p.renderSelf("heartCallback"); // either rendering for first time, or rerendering as new classpect
         }
     }
 
@@ -374,7 +366,7 @@ class SessionMutator {
         //add to session
         for (Player p in chosen) {
             p.increasePower(130, 130); //ignore normal caps. don't want us to be unbeatable, not also not level 1
-            p.renderSelf(); // either rendering for first time, or rerendering as new classpect
+            p.renderSelf("rageBS"); // either rendering for first time, or rerendering as new classpect
             s.players.add(p); //don't add till rendered.
         }
 
@@ -422,7 +414,7 @@ class SessionMutator {
         ret += "They distribute luck like some kind of bullshit fairy sprinkling fake as shit fairy dust everywhere, but their REAL ";
         ret += "trick is how they hog all the relevancy no matter how little sense it makes. Oh, huh, looks like they shook loose some extra information, as well.";
         for (Player p in s.players) {
-            p.renderSelf(); //to pick up lack of relevancy or whatever
+            p.renderSelf("lightBS"); //to pick up lack of relevancy or whatever
             p.setStat(Stats.MAX_LUCK, 88888888);
             p.gnosis += 1; //yes it means they skip whatever effect was supposed to be paired with this, but should increase gnosis ending rate regardless.
         }
@@ -456,7 +448,8 @@ class SessionMutator {
         String scream = hopePlayer.aspect.fontTag() + hopePlayer.rand.pickFrom(jakeisms) + "</font>";
         String ret = "The ${hopePlayer.htmlTitle()} begins glowing and screaming dramatically. Lines of SBURBs code light up around them. <div class = 'jake'>$scream</div>";
         ret += "Every aspect of SBURB appears to be aligning itself with their beliefs. ";
-        Stats.POWER.coefficient = 9001.0;
+        powerCoefficient = 9001.0;
+        Stats.POWER.coefficient = powerCoefficient;
         hopePlayer.setStat(Stats.POWER, 9001); //i know i can save everyone.
         Stats.POWER.minDerived = 9000.0; //you have to be be OVER 9000!!!
         gameEntityMinPower = 9000.0;
@@ -471,12 +464,10 @@ class SessionMutator {
         s.hardStrength = 0; //this means the players 'need help' from the Mayor automatically.
         spawnQueen(s);
         spawnKing(s);
-        spawnJack(s);
         if(hopePlayer.land != null) hopePlayer.land.denizenFeature.name = "A small toy snake";
         //hopePlayer.denizen.setStat(Stats.POWER, 1);
         //hopePlayer.denizen.setStat(Stats.CURRENT_HEALTH, 1);
         ret += "Their enemies are made into ridiculous non-threats. ";
-        spawnDemocraticArmy(s);
         ret += "The democratic army rallies around this beacon of hope. ";
         ret += "The other players have definitely always been cooperative and sane.  And alive. Very alive. It would be ridiculous to imagine anyone dying. ";
         List<String> insults = <String>["Boy", "Jerk", "Ass", "Dick", "Douche", "Piss", "Fuck", "Butt", "Poop", "Chump", "Cad", "Scam"];
@@ -489,18 +480,21 @@ class SessionMutator {
             p.setStat(Stats.CURRENT_HEALTH, 9001);
             p.setStat(Stats.SANITY, 9001);
             p.unconditionallyImmortal = true; //i BELIEVE no one will die.  (of course, this does nothing if they are'nt god tier)
-            p.renderSelf();
+            p.renderSelf("hopeBS");
             Relationship r = hopePlayer.getRelationshipWith(p);
             if (r != null && (r.saved_type == r.badBig || r.saved_type == r.spades || r.saved_type == r.clubs)) {
                 //yes, this means any players who share your enemies class or aspect get renamed too.
                 //but wastes are ALL about the unintended consequences, right?
-                s.logger.info("AB: They are renaming ${r.target.aspect.name} and ${r.target.class_name.name}");
-                r.target.aspect.name = s.rand.pickFrom(insults);
-                r.target.class_name.name = s.rand.pickFrom(insults);
-                s.logger.info("AB: Now they are ${r.target.aspect.name} and ${r.target.class_name.name}");
-                r.target.canGodTierRevive = false; //you're secretly mortal now, asshole.
-                r.target.unconditionallyImmortal = false;
-                modEnemies = true;
+                if(r.target is Player) {
+                    Player p = r.target as Player;
+                    s.logger.info("AB: They are renaming ${p.aspect.name} and ${p.class_name.name}");
+                    p.aspect.name = s.rand.pickFrom(insults);
+                    p.class_name.name = s.rand.pickFrom(insults);
+                    s.logger.info("AB: Now they are ${p.aspect.name} and ${p.class_name.name}");
+                    p.canGodTierRevive = false; //you're secretly mortal now, asshole.
+                    p.unconditionallyImmortal = false;
+                    modEnemies = true;
+                }
             } else if (r != null && (r.saved_type == r.goodBig || r.saved_type == r.heart || r.saved_type == r.diamond)) {
                 Relationship r2 = p.getRelationshipWith(hopePlayer);
                 //r.value = 3333; //testing something
@@ -532,10 +526,12 @@ class SessionMutator {
             p.dead = false;
             p.dreamSelf = true; //your dream self is revived, too.
             if (p.land != null && p.land.denizenFeature.denizen != null)p.land.denizenFeature.denizen ;
-            p.renderSelf();
+            p.renderSelf("lifeBS");
         }
 
-        List<GameEntity> npcs = s.npcHandler.allNPCS;
+        List<GameEntity> npcs = s.prospit.associatedEntities;
+        npcs.addAll(s.derse.associatedEntities);
+
         for (GameEntity g in npcs) {
             g.makeAlive();
         }
@@ -582,7 +578,8 @@ class SessionMutator {
                 r.value = -1 * r.value;
             }
         }
-        List<GameEntity> npcs = s.npcHandler.allNPCS;
+        List<GameEntity> npcs = s.prospit.associatedEntities;
+        npcs.addAll(s.derse.associatedEntities);
         for (GameEntity g in npcs) {
             g.dead = !g.dead;
         }
@@ -606,7 +603,6 @@ class SessionMutator {
         effectsInPlay ++;
         String ret = "The ${activatingPlayer.htmlTitle()} is living the dream. The very fabric of SBURB is being undone according to their whims. Alchemy will now work the way it SHOULD, the way they know in their heart. They also make sure everyone has plenty of items to alchemize with.";
 
-        s.available_scenes.insert(0, new Gristmas(s));
         s.deathScenes.insert(0, new Gristmas(s));
         s.reckoningScenes.insert(0, new Gristmas(s));
 
@@ -668,7 +664,7 @@ class SessionMutator {
             html += "</div><br>";
 
             setHtml(div2, html);
-            (querySelector("#yellowButton") as ButtonElement).onClick.listen((e) => decision());
+            (querySelector("#yellowButton") as ButtonElement).onClick.listen((e) => decision(session));
 
 
             //wire up custom radio buttons after they are rendered
@@ -693,49 +689,48 @@ class SessionMutator {
     //does everything a regular combo does, but a scratch will call this if there's a space field.
     void scratchedCombo(Session s, List<Player> guardians) {
         s.logger.info("AB: A Space player is letting the Players enter their own Scratch.");
-        List<Player> living = findLivingPlayers(guardians);
+        List<Player> living = findLiving(guardians);
         if(living.isEmpty) {
             appendHtml(SimController.instance.storyElement, "<br><Br>You feel a nauseating wave of space go over you. What happened? Wait. Fuck. That's right. The Space Player made it so that they could enter their own Scratched Session. But. Fuck. Everybody is dead. This...god. Maybe...maybe their former guardians can revive them? ");
         }else {
             appendHtml(SimController.instance.storyElement, "<br><Br>You feel a nauseating wave of space go over you. What happened? Wait. How did the players get into their OWN SCRATCH? This doesn't...fuck. What? So wait, do they count as foreign players??? ");
         }
-        addAliensToSession(s, guardians);
+        s.addAliensToSession(guardians);
     }
 
-    void renderEndButtons(Element div) {
-        if(timeField && !doNotRender) renderTimeButton(div);
-        if(spaceField && !doNotRender) renderSpaceButton(div);  //TODO make sure scratches ALSO act as combo sessions.
+    void renderEndButtons(Element div, Session session) {
+        if(timeField && !doNotRender) renderTimeButton(div, session);
+        if(spaceField && !doNotRender) renderSpaceButton(div, session);  //TODO make sure scratches ALSO act as combo sessions.
     }
 
 
-    void renderTimeButton(Element div) {
+    void renderTimeButton(Element div,Session session) {
         //renders a button. If that button is clicked, resets session.
         String html = "<img src='images/reset.png' id='resetButton'><br>Shit man, we can do better. The ${getPlayersTitles(timePlayersReplacing)} knows we can. It's not the 'current' version of them though, but the one from when they got into the code. Time travel, man. ";
         appendHtml(SimController.instance.storyElement, html);
-        querySelector("#resetButton").onClick.listen((Event e) => curSessionGlobalVar.addEventToUndoAndReset(null));
+        querySelector("#resetButton").onClick.listen((Event e) => session.addEventToUndoAndReset(null));
     }
 
-    void renderSpaceButton(Element div) {
+    void renderSpaceButton(Element div,Session session) {
         //renders a button. If that button is clicked, resets session.
         String html = "<img src='images/hussie.png' id='husieButton'><br>Huh. The ${spacePlayer.htmlTitle()} wonders what would happen if we entered the frog through this convinient fourth wall instead of the normal way. There's no way this could go wrong if a Gnosis4 Space Player is telling you to do it! ";
         appendHtml(SimController.instance.storyElement, html);
-        querySelector("#husieButton").onClick.listen((Event e) => SimController.instance.doComboSession(null));
+        querySelector("#husieButton").onClick.listen((Event e) => session.doComboSession(null));
     }
 
     void replacePlayerIfCan(Element div, Player target) {
-        //print("trying to replace player,target is ${target.title()} and  time players are ${getPlayersTitlesNoHTML(timePlayersReplacing)}  and target relationships are ${target.relationships.length}");
+        //;
         String ret = "The ${target.htmlTitle()} lies dead on the ground. ";
         bool replaced = false;
         Player deadPlayer;
         List<Relationship> relationshipsCopy = new List<Relationship>.from(target.relationships);
         for (Player timePlayer in timePlayersReplacing) {
-            //print("timePlayer id is ${timePlayer.id} vs target id is ${target.id} and relationships are  ${timePlayer.relationships.length}");
+            //;
             if (timePlayer.id == target.id) {
 
                 deadPlayer = target.clone();
-                deadPlayer.spriteCanvasID = null;  //don't share a canvas with your past self plz.
                 deadPlayer.id = GameEntity.generateID();
-                deadPlayer.makeDead("Being assasinated by their own future self. ");
+                deadPlayer.makeDead("Being assasinated by their own future self. ", timePlayer);
                 timePlayer.makeAlive();
                 timePlayer.copyStatsTo(target);
 
@@ -781,10 +776,10 @@ class SessionMutator {
             CanvasElement canvasDiv = new CanvasElement(width: canvasWidth, height: canvasHeight);
             div.append(canvasDiv);
 
-            var pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+            var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
             Drawing.drawSprite(pSpriteBuffer, target);
 
-            var dSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+            var dSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
             Drawing.drawSprite(dSpriteBuffer, deadPlayer);
 
             Drawing.drawTimeGears(canvasDiv); //, this.doomedTimeClone);
@@ -825,7 +820,7 @@ class SessionMutator {
         summary.setNumStat("num_scenes", 8008135);
         summary.players = session.players;
         summary.mvp = findMVP(session.players);
-        summary.parentSession = session.parentSession;
+        summary.childSession = session.childSession;
         summary.setNumStat("numLiving", 8008135);
         summary.setNumStat("numDead", 8008135);
 
@@ -850,7 +845,7 @@ class MetaPlayerHandler {
     Player dilletantMathematician;
     Player insufferableOracle;
     Player manicInsomniac;
-    Player nobody;
+    Player somebody;
     Player wooMod;
     Player recusiveSlacker;
     Player tableGuardian;
@@ -864,26 +859,27 @@ class MetaPlayerHandler {
 
     List<Player> get metaPlayers {
         //everything else is 'canon' entry order
-        return <Player>[jadedResearcher, karmicRetribution, recusiveSlacker, aspiringWatcher, manicInsomniac, insufferableOracle, wooMod, nobody, paradoxLands, dilletantMathematician,tableGuardian, feudalUltimatum,authorBot, authorBotJunior];
+        return <Player>[jadedResearcher, karmicRetribution, recusiveSlacker, aspiringWatcher, manicInsomniac, insufferableOracle, wooMod, somebody, paradoxLands, dilletantMathematician,tableGuardian, feudalUltimatum,authorBot, authorBotJunior];
        // return <Player>[jadedResearcher, aspiringWatcher, dilletantMathematician, insufferableOracle, manicInsomniac, nobody, wooMod, recusiveSlacker, paradoxLands, karmicRetribution, authorBot, authorBotJunior];
     }
 
-    void initalizePlayers(Session s) {
-        if (jadedResearcher != null) return; //don't reintiialize, dunkass.
+    void initalizePlayers(Session s, bool reinitNoMatterWhat) {
+        if (jadedResearcher != null && reinitNoMatterWhat == false) return; //don't reintiialize, dunkass.
+        authorBotJunior = makeABJ(s);
+        feudalUltimatum = makeFU(s);
+
         jadedResearcher = makeJR(s);
         aspiringWatcher = makeAW(s);
         tableGuardian = makeTG(s);
-        feudalUltimatum = makeFU(s);
         dilletantMathematician = makeDM(s);
         insufferableOracle = makeIO(s);
         manicInsomniac = makeMI(s);
-        nobody = makeNB(s);
+        somebody = makeSB(s);
         wooMod = makeWM(s);
         recusiveSlacker = makeRS(s);
         paradoxLands = makePL(s);
         karmicRetribution = makeKR(s);
         authorBot = makeAB(s);
-        authorBotJunior = makeABJ(s);
     }
 
     Player makeAW(Session s) {
@@ -918,6 +914,7 @@ class MetaPlayerHandler {
         player.deriveLand = false;
         player.initialize();
         player.makeGuardian();
+        player.guardian.copyFromPlayer(feudalUltimatum);
         player.guardian.initialize();
         player.guardian.guardian = player;
 
@@ -959,9 +956,10 @@ class MetaPlayerHandler {
         player.deriveLand = false;
         player.initialize();
         player.makeGuardian();
+        player.guardian.copyFromPlayer(feudalUltimatum);
         player.guardian.initialize();
         player.guardian.guardian = player;
-        player.land.denizenFeature = new HardDenizenFeature("Dendron");
+        player.land.denizenFeature = new HardDenizenFeature("<span class = 'void'>Tablikea, the</span> Guardian");
 
         player.object_to_prototype = new PotentialSprite("Vinyl", s);
         player.sprite.addPrototyping(player.object_to_prototype);
@@ -977,11 +975,12 @@ class MetaPlayerHandler {
     }
 
     Player makeFU(Session s) {
+        s.logger.info("Making fu");
         Player player = randomPlayerNoDerived(s, SBURBClassManager.PAGE, Aspects.VOID);
         player.quirk = randomHumanQuirk(s.rand);
 
         player.copyFromOCDataString("b=%C2%80%40%009%C3%BEU%04%17%0F%258&s=,,Classism,Genocide,feudalUltimatum&x=nkgA");
-
+        print("Fu's moon is ${player.moon}");
         player.land = player.spawnLand();
         player.land.name = "Land of Dynasties and Taint";
         player.godTier = true;
@@ -995,8 +994,14 @@ class MetaPlayerHandler {
         player.deriveLand = false;
         player.initialize();
         player.makeGuardian();
+        player.guardian.copyFromPlayer(authorBotJunior);
         player.guardian.initialize();
         player.guardian.guardian = player;
+
+        authorBotJunior.guardian.copyFromPlayer(player);
+        authorBotJunior.guardian.initialize();
+        authorBotJunior.guardian.guardian = player;
+
         player.land.denizenFeature = new HardDenizenFeature('<span class = "void">Shogun the, Glitch</span>');
 
         player.object_to_prototype = new PotentialSprite("Aku", s);
@@ -1048,6 +1053,7 @@ class MetaPlayerHandler {
         player.deriveLand = false;
         player.initialize();
         player.makeGuardian();
+        player.guardian.copyFromPlayer(feudalUltimatum);
         player.guardian.initialize();
         player.guardian.guardian = player;
         player.land.denizenFeature = new HardDenizenFeature("<span class = 'void'>Algebron, The </span>Dilletant");
@@ -1100,6 +1106,7 @@ class MetaPlayerHandler {
         player.deriveLand = false;
         player.initialize();
         player.makeGuardian();
+        player.guardian.copyFromPlayer(feudalUltimatum);
         player.guardian.initialize();
         player.guardian.guardian = player;
         player.land.denizenFeature = new HardDenizenFeature('Insurorracle');
@@ -1132,6 +1139,7 @@ class MetaPlayerHandler {
         player.initialize();
         player.deriveSprite = false;
         player.makeGuardian();
+        player.guardian.copyFromPlayer(feudalUltimatum);
         player.guardian.initialize();
         player.guardian.guardian = player;
         player.land.denizenFeature = new HardDenizenFeature('<span class = "void">Maniomnia, the </span>Dreamwaker');
@@ -1154,12 +1162,12 @@ class MetaPlayerHandler {
         return player;
     }
 
-    Player makeNB(Session s) {
-        Player player = randomPlayerNoDerived(s, SBURBClassManager.PAGE, Aspects.BLOOD);
+    Player makeSB(Session s) {
+        Player player = randomPlayerNoDerived(s, SBURBClassManager.LORD, Aspects.BLOOD);
         player.quirk = randomHumanQuirk(s.rand);
 
         player.deriveSpecibus = false;
-        player.specibus = new Specibus("Card", ItemTraitFactory.CARD, [ ItemTraitFactory.PAPER, ItemTraitFactory.WOOD]);
+        player.specibus = new Specibus("Card", ItemTraitFactory.CARD, [ ItemTraitFactory.PAPER, ItemTraitFactory.WOOD, ItemTraitFactory.LEGENDARY]);
 
 
         player.hair = 67;
@@ -1167,7 +1175,7 @@ class MetaPlayerHandler {
         player.hairColor = "#382207";
         player.bloodColor = "#ff0000";
         player.isTroll = false;
-        player.chatHandle = "noBody";
+        player.chatHandle = "someBody";
         player.interest1 = new Interest("Charles Dutton", InterestManager.POPCULTURE);
         player.interest2 = new Interest("Online Roleplaying", InterestManager.SOCIAL);
         player.moon = s.derse;
@@ -1179,6 +1187,7 @@ class MetaPlayerHandler {
         player.deriveLand = false;
         player.initialize();
         player.makeGuardian();
+        player.guardian.copyFromPlayer(feudalUltimatum);
         player.guardian.initialize();
         player.guardian.guardian = player;
         player.land.denizenFeature = new HardDenizenFeature('<span class = "void">Nobrop, the </span>Null');
@@ -1194,6 +1203,7 @@ class MetaPlayerHandler {
         player.quirk.punctuation = 2;
         player.quirk.lettersToReplace = [];
         player.quirk.lettersToReplaceIgnoreCase = [];
+        player.setStat(Stats.EXPERIENCE,100);
 
         f.desc = "A circle within itself. Because fuck reality. ";
         player.fraymotifs.add(f);
@@ -1226,6 +1236,7 @@ class MetaPlayerHandler {
         player.gnosis = 4; //woomod doesn't care that this means they don't do any gnosis tier.
         player.initialize();
         player.makeGuardian();
+        player.guardian.copyFromPlayer(feudalUltimatum);
         player.guardian.initialize();
         player.guardian.guardian = player;
         player.land.denizenFeature = new HardDenizenFeature('<span class = "void">Doomod, The </span>Wanderer');
@@ -1277,6 +1288,7 @@ class MetaPlayerHandler {
         player.deriveLand = false;
         player.initialize();
         player.makeGuardian();
+        player.guardian.copyFromPlayer(feudalUltimatum);
         player.guardian.initialize();
         player.guardian.guardian = player;
         player.land.denizenFeature = new HardDenizenFeature('<span class = "void">Recurscker, The</span>Hollow One');
@@ -1303,7 +1315,7 @@ class MetaPlayerHandler {
     }
 
     Player makeKR(Session s) {
-        Player player = randomPlayerNoDerived(s, SBURBClassManager.ROGUE, Aspects.DREAM);
+        Player player = randomPlayerNoDerived(s, SBURBClassManager.SMITH, Aspects.DREAM);
         player.quirk = randomHumanQuirk(s.rand);
 
         player.deriveSpecibus = false;
@@ -1327,6 +1339,7 @@ class MetaPlayerHandler {
         player.deriveLand = false;
         player.initialize();
         player.makeGuardian();
+        player.guardian.copyFromPlayer(feudalUltimatum);
         player.guardian.initialize();
         player.guardian.guardian = player;
         player.land.denizenFeature = new HardDenizenFeature('Karmiution');
@@ -1373,6 +1386,7 @@ class MetaPlayerHandler {
         player.deriveLand = false;
         player.initialize();
         player.makeGuardian();
+        player.guardian.copyFromPlayer(feudalUltimatum);
         player.guardian.initialize();
         player.guardian.guardian = player;
         player.land.denizenFeature = new HardDenizenFeature('<span class = "void">Paraxalan, The </span>Ever-Searching');
@@ -1407,7 +1421,7 @@ class MetaPlayerHandler {
 
         player.deriveSpecibus = false;
         player.specibus = new Specibus("YellowYard", ItemTraitFactory.STICK, [ ItemTraitFactory.WOOD, ItemTraitFactory.BLUNT]);
-
+        player.sylladex.add(new Item("Garlic Chicken Burger",<ItemTrait>[ItemTraitFactory.EDIBLE]));
 
         player.hair = 13;
         player.ectoBiologicalSource = 13;
@@ -1426,6 +1440,7 @@ class MetaPlayerHandler {
         player.deriveLand = false;
         player.initialize();
         player.makeGuardian();
+        player.guardian.copyFromPlayer(feudalUltimatum);
         player.guardian.initialize();
         player.guardian.guardian = player;
         player.land.denizenFeature = new HardDenizenFeature('<span class = "void">Jadeacher the,</span>Researcher');
@@ -1468,6 +1483,7 @@ class MetaPlayerHandler {
         player.deriveSprite = false;
         player.initialize();
         player.makeGuardian();
+        player.guardian.copyFromPlayer(feudalUltimatum);
         player.guardian.initialize();
         player.guardian.guardian = player;
         player.land.denizenFeature = new HardDenizenFeature('<span class = "void">Authorot, the</span> Robot');
@@ -1483,6 +1499,7 @@ class MetaPlayerHandler {
     }
 
     Player makeABJ(Session s) {
+        s.logger.info("Making abj");
         Player player = randomPlayerNoDerived(s, SBURBClassManager.SCOUT, Aspects.MIND);
         player.quirk = randomHumanQuirk(s.rand);
 
@@ -1538,12 +1555,12 @@ class MetaPlayerHandler {
             return "With a final 'Interesting!!!', AuthorBotJunior is defeated. It feels like a great curse has been lifted. The Players are revived and healed. ";
         }
 
-        if (p == nobody) {
+        if (p == somebody) {
             for (Player pl in p.session.players) {
-                if (pl != p) pl.makeDead("killing nobody");
+                if (pl != p) pl.makeDead("killing nobody", p);
             }
             p.session.rand.pickFrom(p.session.players).makeAlive();
-            return "Huh. You've killed Nobody. The Curse of Dutton descends upon you, making you wish that Dead Sessions could be a thing.  They aren't. They totally aren't, yet. Everybody but one player dies anyways. ";
+            return "Huh. You've killed Nobody. The Curse of Dutton descends upon you, making you wish that Dead Sessions could be a thing.  They aren't. They totally aren't, in your timeline. Everybody but one player dies anyways. ";
         }
 
         if (p == karmicRetribution) {
@@ -1576,7 +1593,7 @@ class MetaPlayerHandler {
             for (Player pl in p.session.players) {
                 pl.isTroll = true;
                 pl.bloodColor = p.session.rand.pickFrom(bloodColors);
-                pl.renderSelf();
+                pl.renderSelf("killedIO");
                 if (pl.hair > 61) pl.hair = p.session.rand.nextIntRange(0, 61);
                 if (pl.leftHorn > 44) pl.leftHorn = p.session.rand.nextIntRange(0, 44);
                 if (pl.rightHorn > 44) pl.rightHorn = p.session.rand.nextIntRange(0, 44);

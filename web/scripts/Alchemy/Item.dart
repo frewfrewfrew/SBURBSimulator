@@ -3,10 +3,13 @@ import "../GameEntities/GameEntity.dart";
 export "../GameEntities/Stats/stat.dart";
 
 import "Item.dart";
+import "MagicalItem.dart";
 import "../random_tables.dart";
 import "Trait.dart";
 import "../random.dart";
 import 'dart:collection';
+import "../GameEntities/NPCS.dart";
+import "../SBURBSim.dart";
 
 //I expect aspects and interests to have lists of items inside of them.
 class Item implements Comparable<Item> {
@@ -15,6 +18,10 @@ class Item implements Comparable<Item> {
     String abDesc;
     String shogunDesc;
 
+    //needed so i can target the ring bearer, for example
+    GameEntity owner;
+
+
     static Iterable<Item> uniqueItemsWithTrait(ItemTrait trait) {
         return Item.allUniqueItems.where((Item a) => (a.traits.contains(trait)));
     }
@@ -22,7 +29,7 @@ class Item implements Comparable<Item> {
     //power of item
     @override
     int compareTo(Item other) {
-        // print("trying to sort ${this} against ${other}, ret is $ret. other value was ${other.result.rank}, my value was ${result.rank}  ");
+        //
         return (other.rank - rank).sign.round(); //higher numbers first
     }
 
@@ -31,7 +38,7 @@ class Item implements Comparable<Item> {
     //a set is like a list but each thing in it happens exactly one or zero times
     Set<ItemTrait>  traits = new Set<ItemTrait>();
 
-    void modMaxUpgrades(Player p) {
+    void modMaxUpgrades(GameEntity p) {
         for(AssociatedStat a in p.associatedStats) {
             if(a.stat == Stats.ALCHEMY) maxUpgrades += a.multiplier.round(); //yes, it might be negative. deal with it.
         }
@@ -48,7 +55,7 @@ class Item implements Comparable<Item> {
         //TODO if this is slow, then cache result and only reget if dirty flag is set..
         List<ItemTrait> combinedTraits = new List<ItemTrait>.from(CombinedTrait.lookForCombinedTraits(traits));
         combinedTraits.sort((ItemTrait a,ItemTrait b){
-          //  print("Sorting a is ${a.ordering} and b is ${b.ordering}");
+          //
             return a.ordering - b.ordering.round();
         });
         for(ItemTrait t in combinedTraits) {
@@ -100,8 +107,21 @@ class Item implements Comparable<Item> {
     }
 
     Item copy() {
-        Item ret =  new Item(baseName, new List<ItemTrait>.from(traits),isCopy:true, abDesc: this.abDesc, shogunDesc:this.shogunDesc);
-     //   print("I copied the item. Does it know it's a copy? ${ret.isCopy}");
+
+        Item ret;
+        if(this is Ring) {
+            ret =  new Ring.withoutOptionalParams(baseName, new List<ItemTrait>.from(traits));
+            (ret as MagicalItem).fraymotifs = new List<Fraymotif>.from((this as MagicalItem).fraymotifs);
+        }else if (this is Scepter) {
+            ret =  new Scepter.withoutOptionalParams(baseName, new List<ItemTrait>.from(traits));
+            (ret as MagicalItem).fraymotifs = new List<Fraymotif>.from((this as MagicalItem).fraymotifs);
+        }else if (this is MagicalItem) {
+            ret =  new MagicalItem.withoutOptionalParams(baseName, new List<ItemTrait>.from(traits));
+            (ret as MagicalItem).fraymotifs = new List<Fraymotif>.from((this as MagicalItem).fraymotifs);
+        }else {
+            ret =  new Item(baseName, new List<ItemTrait>.from(traits),isCopy:true, abDesc: this.abDesc, shogunDesc:this.shogunDesc);
+        }
+
         ret.numUpgrades = numUpgrades;
         ret.maxUpgrades = maxUpgrades;
         return ret;
@@ -109,7 +129,7 @@ class Item implements Comparable<Item> {
 
     //it takes a master to alchemize with a legendary weapon. high grist cost.
     bool canUpgrade(bool master) {
-        //print("Checking number of upgrades remaining for ${baseName}, numUpgrades is ${numUpgrades} and maxUpgrades is ${maxUpgrades}");
+        //
         if(maxUpgrades > 0 && numUpgrades< maxUpgrades) {
             if(traits.contains(ItemTraitFactory.LEGENDARY)){ //only a master can handle a legendary thing
                 if(!master) return false;
@@ -132,12 +152,29 @@ class Item implements Comparable<Item> {
         }
 
         if(!isCopy) {
-            //print("this is a unique item, not a copy. $isCopy");
+            //
             Item.allUniqueItems.add(this);
         }
     }
 
-    String abDescription(Random rand) {
+    Item.withoutOptionalParams(String this.baseName,List<ItemTrait> traitsList) {
+        traits = new Set.from(traitsList);
+        if(this.traits.isEmpty)traits.add(ItemTraitFactory.GENERIC); //every item has at least one trait
+        Set<CombinedTrait> ct = new Set.from(combinedTraits);
+        //if i have any combined traits in me, just use the sub traits.
+        for(CombinedTrait it in ct) {
+            traits.addAll(it.subTraits);
+            traits.remove(it);
+        }
+
+        if(!isCopy) {
+            //
+            Item.allUniqueItems.add(this);
+        }
+    }
+
+
+        String abDescription(Random rand) {
         if(abDesc != null) {
             return abDesc;
         }else {
@@ -151,6 +188,10 @@ class Item implements Comparable<Item> {
         }else {
             return "Actual Worthless Object";
         }
+    }
+
+    bool hasTrait(ItemTrait trait) {
+        return traits.contains(trait);
     }
 
     //it's sharp, it's pointy and it's a sword.   so can pick the same trait multiple times and just pick different words? Yes.
@@ -211,9 +252,9 @@ class Item implements Comparable<Item> {
 //probably could have extended list, too, but that seems more compliced. 40+ methods i have to write?
 class Sylladex extends Object with IterableMixin<Item> {
     List<Item> inventory;
-    Player player;
+    GameEntity owner;
 
-    Sylladex(this.player, [this.inventory = null]) {
+    Sylladex(GameEntity this.owner, [this.inventory = null]) {
         if(this.inventory == null) inventory = new List<Item>();
     }
 
@@ -223,23 +264,60 @@ class Sylladex extends Object with IterableMixin<Item> {
         inventory.sort();
     }
 
+
+    //pass it in with caps plz
+    bool  containsWord(String word) {
+        for (Item i in inventory) {
+            if(i.fullName.contains(word) || i.fullName.contains(word.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void add(Item item) {
         Item i = item;
-        if(Item.allUniqueItems.contains(item)) {
-            //print("going to copy an item rather than add it directly");
+        //if i'm already owned, i'm already physical and unique
+        if(Item.allUniqueItems.contains(item) && item.owner == null && !(item is MagicalItem)) {
+            //
             i = item.copy();
-            //print("Item copied");
+            //
+        }
+        //we can't both own it
+        if(i.owner != null && i.owner != owner) {
+           // if(i is Ring)
+            i.owner.sylladex.remove(i);
+            if(i.owner is Carapace && (item is Ring || item is Scepter)) (i.owner as Carapace).pickName();
+        }else {
+            //if(i is Ring)
+
         }
         inventory.add(i);
-        //print("inventory updated");
-        i.modMaxUpgrades(player);
+        i.owner = owner;
+        //
+        if(owner is Carapace && (item is Ring || item is Scepter)) {
+            (owner as Carapace).pickName();
+            if(!(owner as Carapace).royalty) owner.session.stats.crownedCarapace = true;
+        }
+
+        if(item is Ring || item is Scepter) {
+            owner.everCrowned = true;
+        }
+
+        if(item is Scepter) {
+            //print("TEST RECKONING: giving out scenes to $owner");
+            owner.scenesToAdd.insert(0, new KillWhiteKing(owner.session));
+            owner.scenesToAdd.insert(0, new StartReckoning(owner.session));
+        }
+
+        i.modMaxUpgrades(owner);
     }
 
 
 
     void addAll(List<Item> items) {
         for(Item i in items) {
-            //print("adding ${i.fullName}");
+            //
             add(i);
         }
     }

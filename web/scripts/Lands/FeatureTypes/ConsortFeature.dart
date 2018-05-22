@@ -17,6 +17,7 @@ class ConsortFeature extends DescriptiveFeature {
     }
 
     Consort makeConsort(Session s) {
+        //;
         return new Consort.withSound(name, s, sound);
     }
 
@@ -44,7 +45,7 @@ class CarapaceFeature extends ConsortFeature {
     CarapaceFeature(String name, String sound): super(name, sound);
 
     Carapace makeCarapace(Session s) {
-        return new Carapace(name, s);
+        return new Carapace(name, s, "???"); //TODO figure out what to do here.
     }
 
     //passed in specific can have 'ands' in the middle
@@ -56,4 +57,17 @@ class CarapaceFeature extends ConsortFeature {
         return rand.pickFrom(possibilities);
     }
 
+}
+
+class HorrorTerrorFeature extends ConsortFeature {
+    HorrorTerrorFeature(String name, String sound): super(name, sound);
+
+    //passed in specific can have 'ands' in the middle
+    String randomNeutralFlavorText(Random rand, Player p) {
+        WeightedList<String> possibilities = new WeightedList<String>();
+        possibilities.add("The local ${name} begins singing  a song of terrible import.");
+        possibilities.add("A Speaker of the Furthest Ring demands entertainment.");
+        possibilities.add("The Horror Terrors are amused.",0.3);
+        return rand.pickFrom(possibilities);
+    }
 }

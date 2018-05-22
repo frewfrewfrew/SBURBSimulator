@@ -11,8 +11,6 @@ class DeadQuests extends Scene {
     int section = 1;
     DeadQuests(Session session) : super(session);
 
-    //TODO when i do this but for regular sessions will need interaction effects, corruption, and sprites
-    //TODO stop ticking when the player is dead. They can ONLY god tier when they beat their middle Dead Land Quests
     @override
     void renderContent(Element div) {
 
@@ -36,7 +34,11 @@ class DeadQuests extends Scene {
         String html = "${player.moon.getChapter()} ${player.moon.randomFlavorText(session.rand, player)} ";
         appendHtml(div, html);
         //doQuests will append itself.
-        player.moon.doQuest(div, player, null);
+        if(player.moon != null) {
+            player.moon.doQuest(div, player, null);
+        }else {
+            session.furthestRing.doQuest(div, player, null);
+        }
     }
 
     void processEndQuests(div) {
@@ -54,7 +56,7 @@ class DeadQuests extends Scene {
     }
 
     void processMiddleQuests(Element div) {
-        //print("doing the middle quests which are whole planets worth of shit");
+        //;
         /*
            Middle quests consist of  every quest in teh dead session's current land
            then a quest from the next denizen quest, and choosing new current land
@@ -65,13 +67,34 @@ class DeadQuests extends Scene {
         Land l = (session as DeadSession).currentLand;
         if(!l.noMoreQuests) l.initQuest([player]);
         if(l.noMoreQuests || l.currentQuestChain == null) {
-            //print("picking next land");
+            //;
             chooseChildLand();
             middleIntermissions(div);
             return;
         }
-       // print("Not time for a new planet");
-        String html = "${l.getChapter()}The ${player.htmlTitle()} is in the ${l.name}.  ${l.randomFlavorText(session.rand, player)} ";
+       // ;
+        List<GameEntity> choices = findLiving(player.companionsCopy);
+        GameEntity helper = rand.pickFrom(choices);
+
+
+        String helperText = "";
+        if(helper != null) {
+            //session.logger.info("Getting help in dead session from $helper");
+            helperText = "$helperText ${player.interactionEffect(helper)} "; //players always have an effect.
+            if (helper is Sprite) {
+                helperText = "$helperText ${helper.htmlTitle()} ${(helper as Sprite).helpPhrase}<br><br>";
+            } else if (helper is Consort) {
+                //session.logger.info("AB: consort helper.");
+                helperText = "$helperText The ${helper.htmlTitle()} is ${(helper as Consort).sound}ing. It's somehow helpful. ";
+            } else if (helper is Leprechaun) {
+                //session.logger.info("AB: leprechaun helper.");
+                helperText = "$helperText The ${helper.htmlTitle()} is using Aspect powers in appropriate ways to clear the lands challenges for their Lord. ";
+            } else {
+                helperText = "$helperText The ${helper.htmlTitle()} is helping where they can. ";
+            }
+        }
+
+        String html = "${l.getChapter()}The ${player.htmlTitleWithTip()} is in the ${l.name}. $helperText ${l.randomFlavorText(session.rand, player)} ";
         appendHtml(div, html);
         //doQuests will append itself.
         l.doQuest(div, player, null);
@@ -90,11 +113,11 @@ class DeadQuests extends Scene {
         }else {
             ds.currentLand = null;
         }
-       // print("choose a child land of ${ds.currentLand.name}");
+       // ;
     }
 
     void middleIntermissions(Element div) {
-       // print("sports intermissions.");
+       // ;
         DeadSession ds = session as DeadSession;
         Player player = session.players[0];
         player.land.initQuest([player]);
@@ -109,7 +132,7 @@ class DeadQuests extends Scene {
     }
 
     void introduceSecondPartOfQuests(Element div) {
-        //print("introducing teh second part of the quest, where things really open up.");
+        //;
         DeadSession ds = session as DeadSession;
         Player player = session.players[0];
         //TODO have the first quest in the dead land's denizen quests print out, which should
@@ -123,7 +146,7 @@ class DeadQuests extends Scene {
     }
 
     void processMetaLandIntro(Element div) {
-        //print("doing a meta land bullshit quest");
+        //;
         Player player = session.players[0];
         player.land.initQuest([player]);
         String html = "${player.land.getChapter()}The ${player.htmlTitle()} is in the ${player.land.name}.  ${player.land.randomFlavorText(session.rand, player)} ";

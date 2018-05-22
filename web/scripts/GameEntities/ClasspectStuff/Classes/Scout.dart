@@ -6,6 +6,17 @@ import "../../../Lands/FeatureTypes/QuestChainFeature.dart";
 import "../../../Lands/Reward.dart";
 import "../../../Lands/Quest.dart";
 class Scout extends SBURBClass {
+
+    @override
+    String sauceTitle = "Scorned";
+    //what sort of quests rewards do I get?
+    @override
+    double itemWeight = 1.01;
+    @override
+    double fraymotifWeight = 0.01;
+    @override
+    double companionWeight = 0.01;
+
     Scout() : super("Scout", 13, false);
     //i am thinking guides will give other players their own aspects (and not the guides) while scouts will gain whoever they are with's aspect.
     @override
@@ -69,7 +80,7 @@ class Scout extends SBURBClass {
                 new Quest("Now that the ${Quest.DENIZEN} has been defeated, the planet has really opened up. The ${Quest.PLAYER1} eagerly begins to explore uncharted territory. "),
                 new Quest("The ${Quest.PLAYER1} takes in the sight of a glorious waterfall. They might be the only thing in living memory to see it. It's amazing. They continue exploring their land."),
                 new Quest("Deep in a forgotten forest, in a temple covered in golden ${Quest.CONSORT}s, the ${Quest.PLAYER1} finds a treasure chest with a fraymotif inside. Travel is its own reward, but it's nice to have more tangible ones, too.")
-            ], new FraymotifReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
+            ], new RandomReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
 
         //space player near guaranteed to do this.
             ..addFeature(new PostDenizenFrogChain("Find the Frogs", [

@@ -11,8 +11,44 @@ enum ProphecyState {
 //fully replacing old GameEntity that was also an unholy combo of strife engine
 //not abstract, COULD spawn just a generic game entity.
 class GameEntity extends Object with StatOwner   {
+
+    int playerKillCount = 0;
+
+    int npcKillCount = 0;
+    bool usedMiles = false;
+    int landKillCount  = 0;
+    int moonKillCount  = 0;
+    bool everCrowned = false;
+
+
+    //availibility set to false by scenes
+    bool available = true;
+    //scenes are no longer singletons owned by the session. except for the reckoning and aftermath
+    List<Scene> scenes = new List<Scene>();
+    List<Scene> scenesToAdd = new List<Scene>();
+
+    //mostly for npcs, might not be the best way to do it but it's what i'm gonna do for now.
+    //x starts flipping out about TAB soda
+    List<String> distractions = new List<String>();
+    //AW wrote up a bunch of these for carapaces
+    String description = "";
+
+    //why are they pestering Jack?
+    List<String> bureaucraticBullshit = new List<String>();
+
+    //not there yet, but putting down foundation.
+    bool bigBad = false;
+    //players activate when they enter session, npcs activate when they encounter a player.
+    bool active  = false;
+
+    //if you become a companion, they are your party leader.
+    GameEntity partyLeader;
     static int _nextID = 0;
     Specibus specibus;
+    Sylladex sylladex = null;
+    //1/16/18 let's fucking do this. npc update go. mostly npcs but can be brain ghosts and robots, too.
+    List<GameEntity> _companions = new List<GameEntity>();
+
     ProphecyState prophecy = ProphecyState.NONE; //doom players can give this which nerfs their stats but ALSO gives them a huge boost when they die
     //TODO figure out how i want tier 2 sprites to work. prototyping with a carapace and then a  player and then god tiering should result in a god tier Player that can use the Royalty's Items.
 
@@ -33,6 +69,8 @@ class GameEntity extends Object with StatOwner   {
     //
     String fontColor = "#000000";
     bool ghost = false; //if you are ghost, you are rendered spoopy style
+    bool brainGhost = false;
+
     num grist = 100; //everything has it.
     bool dead = false;
     String causeOfDrain = null; //if it's ever not null they will be sideways
@@ -45,20 +83,177 @@ class GameEntity extends Object with StatOwner   {
     //Map<String, num> permaBuffs = <String, num>{ "MANGRIT": 0}; //is an object so it looks like a player with stats.  for things like manGrit which are permanent buffs to power (because modding power directly is confusing since it's also 'level')
     num renderingType = 0; //0 means default for this sim.
     List<AssociatedStat> associatedStats = <AssociatedStat>[]; //most players will have a 2x, a 1x and a -1x stat.
-    String spriteCanvasID = null; //part of new rendering engine.
+    //String spriteCanvasID = null; //part of new rendering engine. deprecated 1/24/18 in favor of using a canvas directly
+    CanvasElement canvas;
+
     num id;
     bool doomed = false; //if you are doomed, no matter what you are, you are likely to die.
     List<Player> doomedTimeClones = <Player>[]; //help fight the final boss(es).
     String causeOfDeath = ""; //fill in every time you die. only matters if you're dead at end
-    GameEntity crowned = null; //TODO figure out how this should work. for now, crowns count as Game Entities, but should be an Item eventually (and should be able to have multiple crowns)
+
+    //npc traits: violent, lucky, charming, cunning
+
+    String get initials {
+        RegExp exp = new RegExp(r"""\b(\w)|[A-Z]""", multiLine: true);
+        String ret =  joinMatches(exp.allMatches(name)).toUpperCase();
+        if(ret == "JN") return "SS"; //fuck you, that's why. Nah. I'm sorry. It's because Jack Noir needs to have the same initails as his Crowned or Exiled self.
+        return ret;
+    }
+
+    bool get violent {
+        if(getStat(Stats.SANITY) <0 && getStat(Stats.RELATIONSHIPS)<0) return true;
+        return false;
+    }
+
+    bool get lucky {
+        if(getStat(Stats.MAX_LUCK) >0 && getStat(Stats.MIN_LUCK) >0) return true;
+        return false;
+    }
+
+    bool get charming {
+        if(getStat(Stats.ALCHEMY) >0 && getStat(Stats.RELATIONSHIPS)>0) return true;
+        return false;
+    }
+
+    bool get cunning {
+        if(getStat(Stats.FREE_WILL) >0 && getStat(Stats.MOBILITY)>0) return true;
+        return false;
+    }
+
+
+
+    //useful for initing npcs, probably won't use for players.
+
+    //hateful and crazy
+    void makeViolent([int base = 100]) {
+        setStat(Stats.SANITY, -1* base);
+        setStat(Stats.RELATIONSHIPS, -1* base);
+    }
+
+    //lucky
+    void makeLucky([int base = 100]) {
+        setStat(Stats.MIN_LUCK, base);
+        setStat(Stats.MAX_LUCK, base);
+    }
+
+    //creative and friendly
+    void makeCharming([int base = 100]) {
+        setStat(Stats.ALCHEMY, base);
+        setStat(Stats.RELATIONSHIPS, base);
+    }
+
+    //determined and fast
+    void makeCunning([int base = 100]) {
+        setStat(Stats.FREE_WILL, base);
+        setStat(Stats.MOBILITY, base);
+    }
+
+    //just returns first, hoarding them does nothing.
+    MagicalItem get crowned
+
+        {
+            for(Item item in sylladex) {
+                if(item is Ring || item is Scepter) {
+                    return item;
+                }
+            }
+        }
+
+    Ring get ring
+
+    {
+        for(Item item in sylladex) {
+            if(item is Ring) {
+                return item;
+            }
+        }
+    }
+
+    Scepter get scepter
+
+    {
+        for(Item item in sylladex) {
+            if(item is Scepter) {
+                return item;
+            }
+        }
+    }
+
+    bool get alliedToPlayers {
+
+        //big bads are never allies
+        if(bigBad) return false;
+        if(partyLeader != null && partyLeader.bigBad) return false;
+
+        //lots of ways to be on player's side
+        if(this is Sprite) return true; //you're a guide
+        if(this is Player) return true; //you're a player
+        //you're prospit
+        if(this is Carapace && (this as Carapace).type == Carapace.PROSPIT) return true;
+        //if you're a companion you're an ally.
+        if(partyLeader != null && (partyLeader is Player)) return true;
+
+        //default
+        return false;
+    }
+
+    //my scenes can trigger behavior in other things that makes them unable to do their own scenes.
+    //this is intended. probably.
+    void processScenes() {
+      // ;
+        //can do as many as you want, so long as you haven't been taken out of availibility
+        for(Scene s in scenes) {
+            s.gameEntity = this;
+            // ;
+            //if one scene makes you unavailable no future scenes
+            if (this.available && s.trigger(session.getReadOnlyAvailablePlayers())) {
+                //session.scenesTriggered.add(s);
+                this.session.numScenes ++;
+                s.renderContent(this.session.newScene(s.runtimeType.toString()));
+            }
+        }
+
+        //otherwise will get conconrrent modification error. put at front, new things are important and shiny
+       // if(scenesToAdd.isNotEmpty) print("TEST RECKONING: adding ${scenesToAdd.length} scenes to $this");
+        scenes.insertAll(0,scenesToAdd);
+        scenesToAdd.clear();
+    }
+
+
+    List<GameEntity> get companionsCopy {
+        //don't want there to be a way to get companions directly
+        //cuz then i might add and remove without going through methods.
+        return new List<GameEntity>.from(_companions);
+    }
+
+    void addCompanion(GameEntity companion) {
+        if(companion.partyLeader != this && companion.partyLeader != null) companion.partyLeader.removeCompanion(companion);
+        companion.partyLeader = this;
+        for(Scene s in companion.scenes) {
+            if(s is MailSideQuest) {
+                scenesToAdd.insert(0, new MailSideQuest(session));
+            }
+        }
+        _companions.add(companion);
+    }
+
+    void removeCompanion(GameEntity companion) {
+        companion.partyLeader = null;
+        _companions.remove(companion);
+    }
 
 
     GameEntity(this.name, this.session) {
         this.initStatHolder();
         id = GameEntity.generateID();
+        sylladex = new Sylladex(this);
+        //;
         //default non player thingy.
         this.specibus = SpecibusFactory.CLAWS;
         this.addBuff(new BuffSpecibus(this)); //programatic
+        this.addBuff(new BuffLord(this)); //will only apply if you are a lord, but all have potential
+       //crashes if(getStat(Stats.CURRENT_HEALTH) <= 0) setStat(Stats.CURRENT_HEALTH, 10);
+        if(!(this is PotentialSprite) && session != null) session.npcHandler.allEntities.add(this);
     }
 
     Iterable<AssociatedStat> get associatedStatsFromAspect => associatedStats.where((AssociatedStat c) => c.isFromAspect);
@@ -67,13 +262,49 @@ class GameEntity extends Object with StatOwner   {
     static void resetNextIdTo(int val) {
         _nextID = val;
     }
+
+    String get debugStatsRaw {
+        String ret = "";
+        for(Stat s in stats) {
+            ret += "${s.name}: ${stats.getBase(s).round()},";
+        }
+        return ret;
+    }
+
+    String get debugStats {
+        String ret = "";
+        for(Stat s in stats) {
+            ret += "${s.name}: ${getStat(s).round()},";
+        }
+        return ret;
+    }
+
+    Stat get highestStat {
+        Stat ret = stats.first;
+        for(Stat s in stats) {
+            //stats.getBase lets you get raw value, not multiplieid
+            if(s != Stats.CURRENT_HEALTH && getStat(s)/s.coefficient > getStat(ret)/ret.coefficient) {
+                //;
+                ret = s;
+            }
+        }
+        return ret;
+    }
+
+    Stat get lowestStat {
+        Stat ret = stats.first;
+        for(Stat s in stats) {
+            if(stats.getBase(s)/s.coefficient < stats.getBase(ret)/s.coefficient) ret = s;
+        }
+        return ret;
+    }
     
     //TODO grab out every method that current gameEntity, Player and PlayerSnapshot are required to have.
     //TODO make sure Player's @overide them.
 
     @override
     String toString() {
-        return this.title().replaceAll(new RegExp(r"\s", multiLine: true), '').replaceAll(new RegExp(r"'", multiLine: true), ''); //no spces probably trying to use this for a div
+        return this.title();
     }
 
 
@@ -130,11 +361,10 @@ class GameEntity extends Object with StatOwner   {
         clonege.relationships = Relationship.cloneRelationshipsStopgap(relationships);
         clonege.renderingType = renderingType; //0 means default for this sim.
         clonege.associatedStats = associatedStats; //most players will have a 2x, a 1x and a -1x stat.
-        clonege.spriteCanvasID = spriteCanvasID; //part of new rendering engine.
         clonege.doomed = doomed; //if you are doomed, no matter what you are, you are likely to die.
         clonege.doomedTimeClones = doomedTimeClones; //TODO should these be cloned? help fight the final boss(es).
         clonege.causeOfDeath = causeOfDeath; //fill in every time you die. only matters if you're dead at end
-        clonege.crowned = crowned; //TODO figure out how this should work. for now, crowns count as Game Entities, but should be an Item eventually
+        clonege.sylladex = new Sylladex(sylladex.owner, sylladex.inventory);
     }
 
     //as each type of entity gets renderable, override this.
@@ -150,12 +380,23 @@ class GameEntity extends Object with StatOwner   {
             GameEntity jack = Team.findJackInTeams(enemyTeams);
             GameEntity king = Team.findKingInTeams(enemyTeams);
             String causeOfDeath = "fighting in a strife against ${Team.getTeamsNames(enemyTeams)}";
+            GameEntity killer;
             if (jack != null) {
                 causeOfDeath = "after being shown too many stabs from Jack";
+                killer = jack;
             } else if (king != null) {
                 causeOfDeath = "fighting the Black King";
+                killer = king;
             }
-            makeDead(causeOfDeath);
+
+            if(killer == null) {
+                Team enemies = enemyTeams[0];
+                List<GameEntity> living = findLiving(enemies.members);
+                living.sort(Stats.MOBILITY.sorter);
+                if(living.isNotEmpty) killer = living[0]; //fastest member gets the loot
+            }
+
+            makeDead(causeOfDeath, killer);
             return "${htmlTitleHP()} has died. ";
         }
         return "";
@@ -172,6 +413,13 @@ class GameEntity extends Object with StatOwner   {
         if(crowned != null) {
             crowned.resetFraymotifs();
         }
+    }
+
+    bool friendsWith(GameEntity other) {
+        if(other == null) return false;
+        Relationship r = getRelationshipWith(other);
+        if(r == null) return false;
+        return r.value > 0;
     }
 
     //any subclass can choose to do things differently. for now, this is default.
@@ -214,7 +462,7 @@ class GameEntity extends Object with StatOwner   {
         if (this.session.rand.nextDouble() > 0.5 && !(this is Player)) return false; //don't use them all at once, dunkass. unless you are a player. fraymotifs 4 lyfe
         List<Fraymotif> usableFraymotifs = this.session.fraymotifCreator.getUsableFraymotifs(this, living_allies, living_enemies);
         if (crowned != null) { //ring/scepter has fraymotifs, too.  (maybe shouldn't let humans get thefraymotifs but what the fuck ever. roxyc could do voidy shit.)
-            usableFraymotifs.addAll(this.session.fraymotifCreator.getUsableFraymotifs(crowned, living_allies, living_enemies));
+            usableFraymotifs.addAll(this.session.fraymotifCreator.getUsableFraymotifsMagicalItem(crowned, living_allies, living_enemies));
         }
         if (usableFraymotifs.isEmpty) return false;
         num mine = getStat(Stats.SANITY);
@@ -438,12 +686,12 @@ class GameEntity extends Object with StatOwner   {
     String describeBuffs() {
         List<String> ret = <String>[];
         Iterable<Stat> allStats = Stats.all;
-        //print("$this buffs: $buffs");
+        //;
         for (Stat stat in allStats) {
             double withbuffs = this.stats.derive(stat); // functionally this.stats[stat]
             double withoutbuffs = this.stats.derive(stat, (Buff b) => !b.combat);
             double diff = withbuffs - withoutbuffs;
-            //print("$stat: with: $withbuffs, without: $withoutbuffs, diff: $diff");
+            //;
             //only say nothing if equal to zero
             if (diff > 0) ret.add("more ${stat.emphaticPositive}");
             if (diff < 0) ret.add("less ${stat.emphaticPositive}");
@@ -482,6 +730,19 @@ class GameEntity extends Object with StatOwner   {
         return "${getToolTip()}$ret$pname</span>"; //TODO denizens are aspect colored.  also, that extra span there is to close out the tooltip
     }
 
+    //will be diff for carapaces
+    List<Fraymotif> get fraymotifsForDisplay {
+        List<Fraymotif> ret = new List<Fraymotif>.from(fraymotifs);
+        for(Item item in sylladex) {
+            if(item is MagicalItem) {
+                MagicalItem m = item as MagicalItem;
+                if(!(m is Ring) && !(m is Scepter) ) ret.addAll(m.fraymotifs);
+            }
+        }
+       // ;
+        return ret;
+    }
+
     String htmlTitle() {
         String ret = "";
         if (this.crowned != null) ret = "${ret}Crowned ";
@@ -503,28 +764,36 @@ class GameEntity extends Object with StatOwner   {
         String ret = "<span class = 'tooltip'><span class='tooltiptext'><table>";
         ret += "<tr><td class = 'toolTipSection'>$name<hr>";
 
-        ret += "<br><Br>Prophecy Status: ${prophecy}";
-
         ret += "</td>";
+        Iterable<Stat> as = Stats.summarise;
         ret += "<td class = 'toolTipSection'>Stats<hr>";
-        for (Stat stat in Stats.summarise) {
+        for (Stat stat in as) {
             ret += "$stat: ${getStat(stat).round()}<br>";
         }
 
-        ret += "</td><tr></tr><td class = 'toolTipSection'>Fraymotifs<hr>";
-        for(Fraymotif f in fraymotifs) {
+        ret += "</td>";
+
+
+        ret += "</td><td class = 'toolTipSection' rowspan='2'>Sylladex<hr>";
+        ret += "Specibus: ${specibus.fullNameWithUpgrade}, Rank: ${specibus.rank}<br><br>";
+
+        for(Item item in sylladex) {
+            ret += "${item.fullNameWithUpgrade}<br>";
+        }
+
+
+        ret += "</td></tr><tr><td class = 'toolTipSection'>Fraymotifs<hr>";
+        List<Fraymotif> confusion = fraymotifsForDisplay;
+        //;
+        for(Fraymotif f in confusion) {
             ret += "${f.name}<br>";
         }
 
-        if(crowned != null) {
-            for (Fraymotif f in crowned.fraymotifs) {
-                ret += "${f.name}<br>";
-            }
+        ret += "</td><td class = 'toolTipSection'>Relationships<hr>";
+        for(Relationship r in relationships) {
+            ret += "$r<br>";
         }
-
-        ret += "</td>";
-
-        ret += "</tr></table></span>";
+        ret += "</td></tr></table></span>";
         return ret;
     }
 
@@ -539,11 +808,15 @@ class GameEntity extends Object with StatOwner   {
     void flipOut(String reason) {}
 
     String htmlTitleBasic() {
-        return this.name;
+        String ret = "";
+        if (this.crowned != null) ret = "${ret}Crowned ";
+        return "$ret $name";
     }
 
     String htmlTitleBasicNoTip() {
-        return this.name;
+        String ret = "";
+        if (this.crowned != null) ret = "${ret}Crowned ";
+        return "$ret $name";
     }
 
     void makeAlive() {
@@ -554,13 +827,37 @@ class GameEntity extends Object with StatOwner   {
 
     Relationship getRelationshipWith(GameEntity target) {
         //stub for boss fights where an asshole absconds.
+        for (Relationship r in relationships) {
+            if (r.target.id == target.id) {
+                return r;
+            }
+        }
         return null;
     }
 
-    void makeDead(String causeOfDeath) {
+    //a standard RPG trope, even if they are your friend
+    void lootCorpse(GameEntity corpse) {
+        if(corpse == null) return;
+        //so no concurrent mods (wouldu try to loop on items even as it removes items)
+        List<Item> tmp = new List<Item>.from(corpse.sylladex.inventory);
+       // ;
+        if(corpse != this) sylladex.addAll(tmp);
+        //;
+
+    }
+
+    void makeDead(String causeOfDeath, GameEntity killer, [bool allowLooting = true]) {
         if(session.mutator.lifeField) return; //does fucking nothing.
         this.dead = true;
         this.causeOfDeath = causeOfDeath;
+        if(killer != null) {
+            if(this is Player) {
+                killer.playerKillCount ++;
+            }else {
+                killer.npcKillCount ++;
+            }
+            if(killer != null && allowLooting)  killer.lootCorpse(this);
+        }
     }
 
     void interactionEffect(GameEntity ge) {
@@ -591,6 +888,11 @@ class GameEntity extends Object with StatOwner   {
         return <Relationship>[];
     }
 
+    void processCardFor() {
+        //does nothing, offspring will override if they need to
+    }
+
+
     static String getEntitiesNames(List<GameEntity> ges) {
         return ges.map((i) => i.title()).join(','); //TODO put an and at the end.
     }
@@ -611,7 +913,7 @@ class GameEntity extends Object with StatOwner   {
   }
 
   void setImportantShit(Session newSession, List<AssociatedStat> newAssociatedStats, String newName, double strength, List<Fraymotif> newFraymotifs, bool denizenBeat, bool god) {
-      print("Strength for denizen $name is: $strength");
+      ;
       //based off existing denizen code.  care about which aspect i am.
       //also make minion here.
       this.name = newName;

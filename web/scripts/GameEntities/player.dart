@@ -5,6 +5,7 @@ import "dart:typed_data";
 import "../SBURBSim.dart";
 import "../includes/bytebuilder.dart";
 import "../navbar.dart";
+import '../includes/lz-string.dart';
 
 
 
@@ -13,10 +14,13 @@ class Player extends GameEntity{
     num baby = null;
     CanvasElement firstStatsCanvas;
     bool canSkaia = false; //unlocked by finishing quests or by quest bed god tiering.
-    //TODO make this a custom object that has a list inside, make it so you have to copy items to add them here.
-    Sylladex sylladex = null;
+
     @override
     num grist = 0; // players do not spawn with grist
+
+    //set when you set moon, so you know what your dream self looks like even if you don't have a moon.
+    Palette dreamPalette;
+
     //if 0, not yet woken up.
     double moonChance = 0.0;
     num pvpKillCount = 0; //for stats.
@@ -40,7 +44,7 @@ class Player extends GameEntity{
     bool robot = false;
     num ectoBiologicalSource = null; //might not be created in their own session now.
     SBURBClass class_name;
-    Player guardian = null; //no longer the sessions job to keep track.
+    Player _guardian = null; //no longer the sessions job to keep track.
     num number_confessions = 0;
     num number_times_confessed_to = 0;
     bool baby_stuck = false;
@@ -87,14 +91,38 @@ class Player extends GameEntity{
 
     Moon get moon => _moon;
 
+    String get moonName {
+        if(_moon == null) {
+            session.logger.info("AB: a player without a moon did something that needed a moon. probably kissing someone. whatever.");
+            return "[ERROR: MOON NOT FOUND]";
+        }else {
+            return _moon.name;
+        }
+    }
+
     void set moon(Moon m) {
-        //print("${title()} setting moon to: $m");
+        if(m != null) ;
         _moon = m;
-        if(m!=null)syncToSessionMoon();
+        if(m!=null) {
+            dreamPalette = _moon.palette;
+            syncToSessionMoon();
+        }
     }
 
     //no longer allowed to set it.
     bool get denizenDefeated => _denizenDefeated;
+
+    @override
+    List<String> get bureaucraticBullshit {
+        return class_name.bureaucraticBullshit;
+    }
+
+    @override
+    void processCardFor() {
+      class_name.processCard();
+      aspect.processCard();
+    }
+
 
     void set denizenDefeatedExplicitlySet(bool x) {
         _denizenDefeated = x;
@@ -102,10 +130,10 @@ class Player extends GameEntity{
 
 
     Player([Session session, SBURBClass this.class_name, Aspect this.aspect, GameEntity this.object_to_prototype, Moon m, bool this.godDestiny]) : super("", session) {
-        //print("making new player with classpect ${title()} and moon $m");
+        //;
         moon = m; //set explicitly so triggers syncing.
         this.name = "player_$id"; //this.htmlTitleBasic();
-        sylladex = new Sylladex(this);
+        //testing something
     }
 
     @override
@@ -122,14 +150,14 @@ class Player extends GameEntity{
     //stop having references to fake as fuck moons yo.
     //make sure you refere to private moon so you don't get in infinite loop
     void syncToSessionMoon() {
-        //print("syncing ${title()} to session moon");
+        //;
         if(moon == null || session == null || session.prospit == null || session.derse == null) return;
-        //print("moon wasn't null, moon is ${moon.name}.");
+        //;
         if (moon.name == session.prospit.name) {
-            //print("${title()} moon was prospit,${moon.name}");
+            ;
             _moon = session.prospit;
         } else if (moon.name == session.derse.name) {
-            //print(" ${title()} moon was derse, ${moon.name}");
+            ;
             _moon = session.derse;
         }
     }
@@ -180,7 +208,7 @@ class Player extends GameEntity{
         String b = (getParameterByName("b", bs)); //this is pre-decoded, if you try to decode again breaks mages of heart which are "%"
         String s = getParameterByName("s", bs);
         String x = (getParameterByName("x", bs));
-        List<Player> players = dataBytesAndStringsToPlayers(b, s, x); //technically an array of one players.;
+        List<Player> players = dataBytesAndStringsToPlayers(session,b, s, x); //technically an array of one players.;
         this.copyFromPlayer(players[0]);
     }
 
@@ -196,6 +224,24 @@ class Player extends GameEntity{
         return ret;
     }
 
+    @override
+    List<Fraymotif> get fraymotifsForDisplay {
+        List<Fraymotif> ret = new List.from(fraymotifs);
+        //;
+        for(Item item in sylladex) {
+            //;
+
+            if(item is MagicalItem && aspect == Aspects.SAUCE) {
+                MagicalItem m = item as MagicalItem;
+                //only sauce players can use the ring
+                ret.addAll(m.fraymotifs);
+            }else if(Item is MagicalItem) {
+                MagicalItem m = item as MagicalItem;
+                if(!(m is Ring) && !(m is Scepter) ) ret.addAll(m.fraymotifs);
+            }
+        }
+        return ret;
+    }
 
     @override
     void flipOut(String reason) {
@@ -211,28 +257,28 @@ class Player extends GameEntity{
         bool render = false;
 
         if (this.grimDark <= 3 && tmp > 3) { //newly GrimDark
-            //print("grim dark 3 or more in session: ${this.session.session_id}");
+            //;
             render = true;
         } else if (this.grimDark > 3 && tmp <= 3) { //newly recovered.
             render = true;
         }
         this.grimDark += val;
         if (render) {
-            this.renderSelf();
+            this.renderSelf("changeGrimDark");
         }
     }
 
     void makeMurderMode() {
         this.murderMode = true;
         this.increasePower();
-        this.renderSelf(); //new scars. //can't do scars just on top of sprite 'cause hair might cover.'
+        this.renderSelf("makeMurderMode"); //new scars. //can't do scars just on top of sprite 'cause hair might cover.'
     }
 
     void unmakeMurderMode() {
         if(session.mutator.rageField) return; //you don't LEAVE murdermode until you are mothering fuck DONE you heretic
         this.murderMode = false;
         this.leftMurderMode = true;
-        this.renderSelf();
+        this.renderSelf("unmakeMurderMode");
     }
 
     void addDoomedTimeClone(Player timeClone) {
@@ -243,9 +289,23 @@ class Player extends GameEntity{
 
 
     @override
-    String makeDead(String causeOfDeath) {
-       // print("making dead $causeOfDeath");
+    String makeDead(String causeOfDeath, GameEntity killer, [bool allowLooting = true]) {
+        //session.logger.info("DEBUGGING MAKE DEAD making ${title()} dead $causeOfDeath");
+
+        //can loot corpses even in life gnosis, or how else will things happen?
+        if(killer != null && allowLooting) {
+            killer.lootCorpse(this);
+        }
+
         if(session.mutator.lifeField) return " Death has no meaning. "; //does fucking nothing.
+
+        if(killer != null) {
+            if(this is Player) {
+                killer.playerKillCount ++;
+            }else {
+                killer.npcKillCount ++;
+            }
+        }
         String ret = "";
         this.dead = true;
         this.timesDied ++;
@@ -253,7 +313,7 @@ class Player extends GameEntity{
         this.causeOfDeath = sanitizeString(causeOfDeath);
         if (this.getStat(Stats.CURRENT_HEALTH) > 0) this.setStat(Stats.CURRENT_HEALTH, -1); //just in case anything weird is going on. dead is dead.  (for example, you could have been debuffed of hp).
         if (!this.godTier) { //god tiers only make ghosts in GodTierRevivial
-            Player g = Player.makeRenderingSnapshot(this);
+            Player g = Player.makeRenderingSnapshot(this,false);
             g.fraymotifs = new List<Fraymotif>.from(this.fraymotifs); //copy not reference
             this.session.afterLife.addGhost(g);
         }
@@ -262,8 +322,11 @@ class Player extends GameEntity{
             prophecy = ProphecyState.FULLFILLED;
             ret += " The prophecy is fullfilled. ";
         }
-        this.renderSelf();
+        if(canvas == null) initSpriteCanvas();
+        if(!Drawing.checkSimMode()) canvas.context2D.save(); //need to restore living state latr
+        this.renderSelf("makeDead");
         this.triggerOtherPlayersWithMyDeath();
+        canvas.context2D.restore(); //only stay rotated long enough to render.
         return ret;
     }
 
@@ -277,39 +340,39 @@ class Player extends GameEntity{
 
             if (r.saved_type == r.goodBig) {
                 r.target.addStat(Stats.SANITY, -10);
-                if (r.target.flipOutReason == null) {
-                    r.target.flipOutReason = " their dead crush, the ${this.htmlTitleBasic()}"; //don't override existing flip out reasons. not for something as generic as a dead crush.
-                    r.target.flippingOutOverDeadPlayer = this;
+                if ((r.target  as Player).flipOutReason == null) {
+                    (r.target  as Player).flipOutReason = " their dead crush, the ${this.htmlTitleBasic()}"; //don't override existing flip out reasons. not for something as generic as a dead crush.
+                    (r.target  as Player).flippingOutOverDeadPlayer = this;
                 }
             } else if (r.value > 0) {
                 r.target.addStat(Stats.SANITY, -10);
-                if (r.target.flipOutReason == null) {
-                    r.target.flippingOutOverDeadPlayer = this;
-                    r.target.flipOutReason = " their dead friend, the ${this.htmlTitleBasic()}"; //don't override existing flip out reasons. not for something as generic as a dead friend.
+                if ((r.target  as Player).flipOutReason == null) {
+                    (r.target  as Player).flippingOutOverDeadPlayer = this;
+                    (r.target  as Player).flipOutReason = " their dead friend, the ${this.htmlTitleBasic()}"; //don't override existing flip out reasons. not for something as generic as a dead friend.
                 }
             } else if (r.saved_type == r.spades) {
-                r.target.addStat(Stats.SANITY, -100);
-                r.target.flipOutReason = " their dead Kismesis, the ${this.htmlTitleBasic()}";
-                r.target.flippingOutOverDeadPlayer = this;
+                (r.target  as Player).addStat(Stats.SANITY, -100);
+                (r.target  as Player).flipOutReason = " their dead Kismesis, the ${this.htmlTitleBasic()}";
+                (r.target  as Player).flippingOutOverDeadPlayer = this;
             } else if (r.saved_type == r.heart) {
-                r.target.addStat(Stats.SANITY, -100);
-                r.target.flipOutReason = " their dead Matesprit, the ${this.htmlTitleBasic()}";
-                r.target.flippingOutOverDeadPlayer = this;
+                (r.target  as Player).addStat(Stats.SANITY, -100);
+                (r.target  as Player).flipOutReason = " their dead Matesprit, the ${this.htmlTitleBasic()}";
+                (r.target  as Player).flippingOutOverDeadPlayer = this;
             } else if (r.saved_type == r.diamond) {
-                r.target.addStat(Stats.SANITY, -1000);
-                r.target.damageAllRelationships();
-                r.target.damageAllRelationships();
-                r.target.damageAllRelationships();
-                r.target.flipOutReason = " their dead Moirail, the ${this.htmlTitleBasic()}, fuck, that can't be good...";
-                r.target.flippingOutOverDeadPlayer = this;
+                (r.target  as Player).addStat(Stats.SANITY, -1000);
+                (r.target  as Player).damageAllRelationships();
+                (r.target  as Player).damageAllRelationships();
+                (r.target  as Player).damageAllRelationships();
+                (r.target  as Player).flipOutReason = " their dead Moirail, the ${this.htmlTitleBasic()}, fuck, that can't be good...";
+                (r.target  as Player).flippingOutOverDeadPlayer = this;
             }
 
             //whether or not i care about them, there's also the novelty factor.
             if (dead.length == 1) { //if only I am dead, death still has it's impact and even my enemies care.
                 r.target.addStat(Stats.SANITY, -10);
-                if (r.target.flipOutReason == null) {
-                    r.target.flipOutReason = " the dead player, the ${this.htmlTitleBasic()}"; //don't override existing flip out reasons. not for something as generic as a dead player.
-                    r.target.flippingOutOverDeadPlayer = this;
+                if ((r.target  as Player).flipOutReason == null) {
+                    (r.target  as Player).flipOutReason = " the dead player, the ${this.htmlTitleBasic()}"; //don't override existing flip out reasons. not for something as generic as a dead player.
+                    (r.target  as Player).flippingOutOverDeadPlayer = this;
                 }
             }
             ////print(r.target.title() + " has flipOutReason of: " + r.target.flipOutReason + " and knows about dead player: " + r.target.flippingOutOverDeadPlayer);
@@ -398,6 +461,15 @@ class Player extends GameEntity{
         this.increasePower();
         //was on a quest bed.
         if(!isDreamSelf && dreamSelf) canSkaia = true;
+
+        //i know for a fact this is rare enough that i'll forget i added it.
+        if(dreamSelf && aspect != Aspects.TIME && aspect != Aspects.SPACE &&  sylladex.containsWord("Sauce")) {
+            aspect = Aspects.SAUCE;
+            session.logger.info("AB: Bluh. One of Shogun's Sauce Glitches just triggered. Better tell JR.");
+            fraymotifs.add(new Fraymotif("Seinfeld Remix", 13)
+                ..effects.add(new FraymotifEffect(Stats.FREE_WILL, 2, true))
+                ..desc = " What the fuck? What even is this? Is it a riddle? I thought JR said it wasn't important... ");
+        }
         this.godTier = true;
         this.session.stats.godTier = true;
         this.dreamSelf = false;
@@ -405,7 +477,7 @@ class Player extends GameEntity{
         this.leftMurderMode = false; //no scars, unlike other revival methods
         this.isDreamSelf = false;
         this.makeAlive();
-        renderSelf();
+        renderSelf("goGodTier");
     }
 
     @override
@@ -423,7 +495,19 @@ class Player extends GameEntity{
         this.flipOutReason = "they just freaking died";
         //this.leftMurderMode = false; //no scars
         this.victimBlood = null; //clean face
-        this.renderSelf();
+        if(canvas == null) initSpriteCanvas();
+        this.renderSelf("makeAlive");
+    }
+
+    Player get guardian {
+        if(_guardian == null) {
+            makeGuardian();
+        }
+        return _guardian;
+    }
+
+    void set guardian(Player g) {
+        _guardian = g;
     }
 
     @override
@@ -434,6 +518,10 @@ class Player extends GameEntity{
     @override
     String title() {
         String ret = "";
+
+        if(this.crowned != null) {
+            ret = "${ret}Crowned ";
+        }
 
         if (this.doomed) {
             ret = "${ret}Doomed ";
@@ -467,11 +555,19 @@ class Player extends GameEntity{
         if (this.gnosis == 4) {
             ret = "${ret}Wasted ";
         }
-        ret = "$ret${this.class_name} of ${this.aspect}";
+        //refrance to shogun's april fools artwork
+        if(aspect == Aspects.SAUCE) {
+            ret = "$ret${this.class_name.sauceTitle} of ${this.aspect}";
+        }else {
+            ret = "$ret${this.class_name} of ${this.aspect}";
+        }
         if (this.dead) {
             ret = "$ret's Corpse";
         } else if (this.ghost) {
             ret = "$ret's Ghost";
+        }else if(this.brainGhost) {
+            ret = "$ret's Brain Ghost";
+
         }
 
         return ret;
@@ -529,12 +625,25 @@ class Player extends GameEntity{
             ret += "$stat: ${getStat(stat).round()}<br>";
         }
 
+        ret += "</td>";
+        ret += "<td class = 'toolTipSection'>Companions<hr>";
+        for(GameEntity g in companionsCopy) {
+            String species  = "";
+            if(g is Leprechaun) species = "(Leprechaun)";
+            if(g is Consort) species = "(Consort)";
+            if(g is Carapace && (g as Carapace).type == Carapace.DERSE) species = "(Dersite)";
+            if(g is Carapace && (g as Carapace).type == Carapace.PROSPIT) species = "(Prospitian)";
+
+            ret += "${g.title()} $species<br>";
+        }
+
         ret += "</td><td class = 'toolTipSection' rowspan='2'>Sylladex<hr>";
-        ret += "${specibus.fullNameWithUpgrade}, Rank: ${specibus.rank}<br>";
+        ret += "Specibus: ${specibus.fullNameWithUpgrade}, Rank: ${specibus.rank}<br><br>";
 
         for(Item item in sylladex) {
             ret += "${item.fullNameWithUpgrade}<br>";
         }
+
 
         ret += "</td><td class = 'toolTipSection' rowspan='2'>Buffs<hr>";
 
@@ -542,6 +651,10 @@ class Player extends GameEntity{
 
         for (Buff b in buffs) {
             ret += "$b<br>";
+        }
+
+        for (AssociatedStat s in associatedStats) {
+            ret += "$s<br>";
         }
 
         ret += "</td></tr><tr><td class = 'toolTipSection'>Fraymotifs<hr>";
@@ -703,7 +816,7 @@ class Player extends GameEntity{
     }
 
     bool isVoidAvailable() {
-        Player light = findAspectPlayer(findLivingPlayers(this.session.players), Aspects.LIGHT);
+        Player light = findAspectPlayer(findLiving(this.session.players), Aspects.LIGHT);
         if (light != null && light.godTier) return false;
         return true;
     }
@@ -758,7 +871,7 @@ class Player extends GameEntity{
         if (this.didDenizenKillYou() && (this.grimDark <= 2)) {
             return false;
         } else if (this.grimDark > 2) {
-            //print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!just death for a corrupt player from their denizen or denizen minion in session: ${this.session.session_id.toString()}");
+            //;
             return true; //always just if the denizen puts down a corrupt player.
         }
 
@@ -813,7 +926,7 @@ class Player extends GameEntity{
                 ret = true;
             }
             //extra likely if you just killed the king/queen, you hero you.
-            if ((this.session.npcHandler.king.getStat(Stats.CURRENT_HEALTH) <= 0 || this.session.npcHandler.king.dead == true) && this.session.rand.nextDouble() > .2) {
+            if ((this.session.battlefield.blackKing.getStat(Stats.CURRENT_HEALTH) <= 0 || this.session.battlefield.blackKing.dead == true) && this.session.rand.nextDouble() > .2) {
                 ret = true;
             }
         } else { //unlikely hero
@@ -821,13 +934,13 @@ class Player extends GameEntity{
                 ret = true;
             }
             //extra likely if you just killed the king/queen, you hero you.
-            if (this.session.npcHandler.king.getStat(Stats.CURRENT_HEALTH) <= 0 || this.session.npcHandler.king.dead == true && rand.nextDouble() > .4) {
+            if (this.session.battlefield.blackKing.getStat(Stats.CURRENT_HEALTH) <= 0 || this.session.battlefield.blackKing.dead == true && rand.nextDouble() > .4) {
                 ret = true;
             }
         }
 
         if (ret) {
-            ////print("heroic death");
+            ////;
         }
         return ret;
     }
@@ -893,12 +1006,16 @@ class Player extends GameEntity{
         super.copyStatsTo(clone);
         //clone stats.
         clone.baby = baby;
+        //don't let that bitch be null
+        clone.dreamPalette = dreamPalette;
+
         clone.pvpKillCount = pvpKillCount; //for stats.
         clone.timesDied = timesDied;
 
         if(sprite != null) clone.sprite =  sprite.clone(); //gets set to a blank sprite when character is created.
         clone.deriveChatHandle = deriveChatHandle;
         clone.deriveLand = deriveLand;
+        ;
         clone.moon = moon;
         clone.flipOutReason = flipOutReason; //if it's null, i'm not flipping my shit.
         clone.flippingOutOverDeadPlayer = flippingOutOverDeadPlayer; //don't let this go into url. but, don't flip out if the friend is currently alive, you goof.
@@ -994,8 +1111,8 @@ class Player extends GameEntity{
         }
         guardian.initializeDerivedStuff(); //redo levels and land based on real aspect
         //this.guardians.add(guardian); //sessions don't keep track of this anymore
-        player.guardian = guardian;
-        guardian.guardian = this; //goes both ways.
+        player._guardian = guardian;
+        guardian._guardian = this; //goes both ways.
     }
 
     void associatedStatsIncreasePower(num powerBoost) {
@@ -1031,7 +1148,7 @@ class Player extends GameEntity{
     @override
     void increasePower([num magnitude = 1, num cap = 5.1]) {
         magnitude = Math.min(magnitude, cap); //unless otherwise specified, don't let thieves and rogues go TOO crazy.
-        ////print("$this incpower pre boost magnitude is $magnitude on a power of ${getStat('power')}");
+        ////;
         if (this.session.rand.nextDouble() > .9) {
             this.leveledTheHellUp = true; //that multiple of ten thing is bullshit.
         }
@@ -1052,7 +1169,7 @@ class Player extends GameEntity{
         //IT IS THE REASON WHY 40+5 = 65 and i do not even know why. stats are still too high though.
         // if (this.getStat(Stats.POWER) > 0) this.setStat(Stats.POWER, this.getStat(Stats.POWER).round());
 
-        // //print("$this incpower post boost magnitude is $powerBoost on a power of ${getStat('power')}");
+        // //;
         this.heal();
     }
 
@@ -1063,7 +1180,9 @@ class Player extends GameEntity{
 
     @override
     String htmlTitle() {
-        return "${this.aspect.fontTag()}${this.title()}</font>";
+        String light = "";
+        if(session.mutator.lightField) light = " (Active: ${active}, Available: ${available})";
+        return "${this.aspect.fontTag()}${this.title()}</font>$light";
     }
 
     @override
@@ -1167,8 +1286,8 @@ class Player extends GameEntity{
     }
 
     void damageAllRelationshipsWithMe() {
-        for (num i = 0; i < curSessionGlobalVar.players.length; i++) {
-            Relationship r = this.getRelationshipWith(curSessionGlobalVar.players[i]);
+        for (num i = 0; i < session.players.length; i++) {
+            Relationship r = this.getRelationshipWith(session.players[i]);
             if (r != null) {
                 r.decrease();
             }
@@ -1219,7 +1338,15 @@ class Player extends GameEntity{
                 return r;
             }
         }
-        //print("Could not find relationship with ${player.title()} in ${relationships}");
+        //;
+        //JR: this might be a VERY bad idea. let's find out together. (1/26/18)
+        //you at least have to be a player for now, because of how relationships work.
+        //might subclass it out later
+        if(player is Player) {
+            Relationship newR = new Relationship(this, 0, player);
+            player.relationships.add(newR); //nice to meet you
+            return newR;
+        }
         return null;
     }
 
@@ -1363,7 +1490,7 @@ class Player extends GameEntity{
             double withbuffs = this.stats.derive(stat); // functionally this.stats[stat]
             double withoutbuffs = this.stats.derive(stat, (Buff b) => !b.combat);
             double diff = withbuffs - withoutbuffs;
-            //print("$stat: with: $withbuffs, without: $withoutbuffs, diff: $diff");
+            //;
             //only say nothing if equal to zero
             if (diff > 0) ret.add("more ${stat.emphaticPositive}");
             if (diff < 0) ret.add("less ${stat.emphaticPositive}");
@@ -1393,6 +1520,17 @@ class Player extends GameEntity{
             }
         }
         return bestRelationshipSoFar.target;
+    }
+
+    GameEntity getWorstEnemy() {
+        Relationship worstRelationshipSoFar = this.relationships[0];
+        for (num i = 1; i < this.relationships.length; i++) {
+            Relationship r = this.relationships[i];
+            if (r != null && r.value < worstRelationshipSoFar.value) {
+                worstRelationshipSoFar = r;
+            }
+        }
+        return worstRelationshipSoFar.target;
     }
 
     GameEntity getBestFriendFromList(List<GameEntity>potentialFriends, [String debugMessage = null]) {
@@ -1519,32 +1657,22 @@ class Player extends GameEntity{
     }
 
     void initSpriteCanvas() {
-        ////print("Initializing derived stuff.");
-        this.spriteCanvasID = "spriteCanvas${this.id}";
-        String canvasHTML = "<br/><canvas style='display:none' id='${this.spriteCanvasID}' width='400' height='300'></canvas>";
-        appendHtml(querySelector("#playerSprites"), canvasHTML);
-        ////print("append? -> $canvasHTML");
+        if(canvas != null) return;
+       // ;
+        canvas = new CanvasElement(width: 400, height: 300);
+        renderSelf("initSpriteCanvas");
     }
 
-    void renderSelf() {
+    void renderSelf(String caller) {
+       // ;
         if(Drawing.checkSimMode()) return;
-        if (this.spriteCanvasID == null) this.initSpriteCanvas();
-        CanvasElement canvasDiv = querySelector("#${this.spriteCanvasID}");
-
-        //var ctx = canvasDiv.context2D;
+        if (canvas == null) this.initSpriteCanvas();
         this.clearSelf();
-        //var pSpriteBuffer = this.session.sceneRenderingEngine.getBufferCanvas(querySelector("#sprite_template"));
-        CanvasElement pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
-        Drawing.drawSpriteFromScratch(pSpriteBuffer, this);
-        Drawing.copyTmpCanvasToRealCanvasAtPos(canvasDiv, pSpriteBuffer, 0, 0);
-        //this.session.sceneRenderingEngine.drawSpriteFromScratch(pSpriteBuffer, this);
-        //this.session.sceneRenderingEngine.copyTmpCanvasToRealCanvasAtPos(canvasDiv, pSpriteBuffer,0,0);
+        Drawing.drawSpriteFromScratch(canvas, this);
     }
 
     void clearSelf() {
-        CanvasElement canvasDiv = querySelector("#${this.spriteCanvasID}");
-        CanvasRenderingContext2D ctx = canvasDiv.context2D;
-        ctx.clearRect(0, 0, canvasDiv.width, canvasDiv.height);
+        canvas.context2D.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     void initializeMobility() {
@@ -1568,7 +1696,7 @@ class Player extends GameEntity{
             for (num i = 0; i < this.relationships.length; i++) {
                 //needs to be part of this in ADDITION to initialization because what about custom players now.
                 Relationship r = this.relationships[i];
-                if (this.isTroll && this.bloodColor == "#99004d" && r.target.isTroll && r.target.bloodColor == "#99004d") {
+                if (this.isTroll && this.bloodColor == "#99004d" && (r.target  as Player).isTroll && (r.target  as Player).bloodColor == "#99004d") {
                     r.value = -20; //biological imperitive to fight for throne.
                     this.addStat(Stats.SANITY, -10);
                     r.target.addStat(Stats.SANITY, -10);
@@ -1608,7 +1736,7 @@ class Player extends GameEntity{
         if (this.isTroll && this.bloodColor != "#ff0000") {
             this.addStat(Stats.POWER, bloodColorToBoost(this.bloodColor));
         }
-        //print("power initialized to ${this.getStat("power")}");
+        //;
     }
 
     String toDataStrings(bool includeChatHandle) {
@@ -1645,21 +1773,21 @@ class Player extends GameEntity{
     }
 
     void readInExtensionsString(ByteReader reader) {
-        //print("reading in extension string");
+        //;
         //just inverse of encoding process.
         int numFeatures = reader.readExpGolomb(); //assume features are in set order. and that if a given feature is variable it is ALWAYS variable.
-        //print("num features is: $numFeatures");
+        //;
         if (numFeatures > 0) {
             int cid = reader.readByte();
-            //print("Class Name ID : $cid");
+            //;
             this.class_name = intToClassName(cid);
         }
         if (numFeatures > 1) {
             int i = reader.readByte();
-            //print("extension byte for aspect is  $i");
+            //;
 
             this.aspect = Aspects.get(i);
-            //print("after extension byte, aspect is  $aspect");
+            //;
         }
 
 
@@ -1690,23 +1818,24 @@ class Player extends GameEntity{
     }
 
     Map<String, dynamic> toJSON() {
-        num moon = 0;
+        num moonNum = 0;
         String cod = this.causeOfDrain;
         if (cod == null) cod = "";
-        if (this.moon == session.prospit) moon = 1;
-        Map<String, dynamic> json = <String, dynamic>{"aspect": this.aspect.id, "class_name": classNameToInt(this.class_name), "favoriteNumber": this.quirk.favoriteNumber, "hair": this.hair, "hairColor": hexColorToInt(this.hairColor), "isTroll": this.isTroll ? 1 : 0, "bloodColor": bloodColorToInt(this.bloodColor), "leftHorn": this.leftHorn, "rightHorn": this.rightHorn, "interest1Category": this.interest1.category.id, "interest2Category": this.interest2.category.id, "interest1": this.interest1.name, "interest2": this.interest2.name, "robot": this.robot ? 1 : 0, "moon": moon, "causeOfDrain": cod, "victimBlood": bloodColorToInt(this.victimBlood), "godTier": this.godTier ? 1 : 0, "isDreamSelf": this.isDreamSelf ? 1 : 0, "murderMode": this.murderMode ? 1 : 0, "leftMurderMode": this.leftMurderMode ? 1 : 0, "grimDark": this.grimDark, "causeOfDeath": this.causeOfDeath, "dead": this.dead ? 1 : 0, "godDestiny": this.godDestiny ? 1 : 0};
+        if (this.moon == session.prospit) moonNum = 1;
+        Map<String, dynamic> json = <String, dynamic>{"aspect": this.aspect.id, "class_name": classNameToInt(this.class_name), "favoriteNumber": this.quirk.favoriteNumber, "hair": this.hair, "hairColor": hexColorToInt(this.hairColor), "isTroll": this.isTroll ? 1 : 0, "bloodColor": bloodColorToInt(this.bloodColor), "leftHorn": this.leftHorn, "rightHorn": this.rightHorn, "interest1Category": this.interest1.category.id, "interest2Category": this.interest2.category.id, "interest1": this.interest1.name, "interest2": this.interest2.name, "robot": this.robot ? 1 : 0, "moon": moonNum, "causeOfDrain": cod, "victimBlood": bloodColorToInt(this.victimBlood), "godTier": this.godTier ? 1 : 0, "isDreamSelf": this.isDreamSelf ? 1 : 0, "murderMode": this.murderMode ? 1 : 0, "leftMurderMode": this.leftMurderMode ? 1 : 0, "grimDark": this.grimDark, "causeOfDeath": this.causeOfDeath, "dead": this.dead ? 1 : 0, "godDestiny": this.godDestiny ? 1 : 0};
         return json;
     }
 
     @override
     String toString() {
-        return ("${this.class_name}${this.aspect}").replaceAll(new RegExp(r"'", multiLine: true), ''); //no spaces.
+        return title(); //no spaces.
     }
 
     void copyFromPlayer(Player replayPlayer) {
         ////print("copying from player who has a favorite number of: " + replayPlayer.quirk.favoriteNumber);
-        ////print("Overriding player from a replay Player. ");
+        ////;
         ////print(replayPlayer);
+        session.logger.info("copying ${replayPlayer} to ${this}");
         this.aspect = replayPlayer.aspect;
         this.class_name = replayPlayer.class_name;
         this.hair = replayPlayer.hair;
@@ -1731,16 +1860,49 @@ class Player extends GameEntity{
         this.murderMode = replayPlayer.murderMode;
         this.leftMurderMode = replayPlayer.leftMurderMode;
         this.grimDark = replayPlayer.grimDark;
+
         this.moon = replayPlayer.moon;
         this.dead = replayPlayer.dead;
         this.victimBlood = replayPlayer.victimBlood;
         this.robot = replayPlayer.robot;
         this.fraymotifs.clear(); //whoever you were before, you don't have those psionics anymore
         this.applyPossiblePsionics(); //now you have new psionics
-        ////print("after applying psionics I have this many fraymotifs: " + this.fraymotifs.length);
         this.quirk.favoriteNumber = replayPlayer.quirk.favoriteNumber; //will get overridden, has to be after initialization, too, but if i don't do it here, char creartor will look wrong.
         this.makeGuardian();
         this.guardian.applyPossiblePsionics(); //now you have new psionics
+    }
+
+    static List<Player> processDataString(Session session, String dataString) {
+        session.logger.info("TEST DATASTRINGS: going to get players with dataString $dataString, which hopefully wasn't blank.");
+
+        if(session.prospit == null) session.setupMoons("getting replayers");
+        session.logger.info("TEST DATASTRINGS: finished setting up moon");
+
+
+        String params =  window.location.href.substring(window.location.href.indexOf("?") + 1);
+        String base = window.location.href.replaceAll("?$params","");
+        String bs = "${base}?" +dataString;
+
+        String b = (getParameterByName("b", bs));
+        String s = LZString.decompressFromEncodedURIComponent(Uri.encodeFull(getParameterByName("s", bs))); //these are NOT encoded in files, so make sure to encode them
+        String x = (getParameterByName("x", bs));
+
+        //;
+        if (b == null || s == null) return <Player>[];
+        if (b == "null" || s == "null") return <Player>[]; //why was this necesassry????????????????
+        session.logger.info("TEST DATASTRINGS: going to get players with b of $b and s  of $s and x of $x");
+
+        List<Player> ret =  dataBytesAndStringsToPlayers(session,b, s, x);
+        session.logger.info("TEST DATASTRINGS: got players, just need to process a bit");
+
+        //can't let them keep their null session reference.
+
+        for(Player p in ret) {
+            p.session = session;
+            p.syncToSessionMoon();
+            p.initialize();
+        }
+        session.logger.info("TEST DATASTRINGS: done processing data strings");
     }
 
     void initialize() {
@@ -1751,8 +1913,8 @@ class Player extends GameEntity{
     }
 
     void initializeDerivedStuff() {
-        //print("initializing derived stuff for player ${this.chatHandle}");
         populateInventory();
+
         if(deriveLand) land = spawnLand();
 
         if (this.deriveChatHandle) this.chatHandle = getRandomChatHandle(this.session.rand, this.class_name, this.aspect, this.interest1, this.interest2);
@@ -1775,6 +1937,9 @@ class Player extends GameEntity{
         sylladex.clear();
         sylladex.add(session.rand.pickFrom(interest1.category.items));
         sylladex.add(session.rand.pickFrom(interest2.category.items));
+        //testing something
+       // sylladex.add(new Item("Dr Pepper BBQ Sauce",<ItemTrait>[ItemTraitFactory.POISON],shogunDesc: "Culinary Perfection",abDesc:"Gross."));
+
     }
 
     //I mark the source of the themes here, where i'm using them, rather than on creation
@@ -1796,12 +1961,16 @@ class Player extends GameEntity{
         themes[aspectTheme] = aspect.themes[aspectTheme];
         themes[interest1Theme] = interest1.category.themes[interest1Theme];
         themes[interest2Theme] = interest2.category.themes[interest2Theme];
-        //print("<Br><br>spawning land with seed ${rand.spawn().nextInt()}");
-        return new Land.fromWeightedThemes(themes, session, aspect,class_name);
+        Land l =  new Land.fromWeightedThemes(themes, session, aspect,class_name);
+        l.associatedEntities.add(this);
+        return l;
 
     }
 
     void initializeSprite() {
+        if(object_to_prototype == null) {
+            object_to_prototype =  session.rand.pickFrom(PotentialSprite.prototyping_objects);
+        }
         this.sprite = new Sprite("sprite", session); //unprototyped.
         //minLuck, maxLuck, hp, mobility, triggerLevel, freeWill, power, abscondable, canAbscond, framotifs, grist
         this.sprite.stats.setMap(<Stat, num>{Stats.HEALTH: 10, Stats.CURRENT_HEALTH: 10}); //same as denizen minion, but empty power
@@ -1812,6 +1981,19 @@ class Player extends GameEntity{
         return godTier || isDreamSelf || land == null || land.firstCompleted || (aspect == Aspects.BREATH && hasPowers()) ;
     }
 
+    bool canGodTierSomeWay() {
+        if(isDreamSelf) return hasMoon();
+        return hasLand();
+    }
+
+    bool hasLand() {
+        return land != null && !land.dead;
+    }
+
+    bool hasMoon() {
+        return moon != null && !moon.dead;
+    }
+
     ///not static because who can help me varies based on who i am (space is knight, for example)
     ///no longer inside a scene because multiple scenes need a consistent result from this
      Player findHelper(List<Player> players) {
@@ -1819,12 +2001,11 @@ class Player extends GameEntity{
         if(session.mutator.lightField) return session.mutator.inSpotLight;
          //space player can ONLY be helped by knight, and knight prioritizes this
          if(aspect == Aspects.SPACE){//this shit is so illegal
-            // print("I'm a space player, I can only be helped by knight");
              helper = findClassPlayer(players, SBURBClassManager.KNIGHT);
              //can help others 100% of the time if foreign player. you can like, fly and shit with your end game items.
              if(helper != null && helper.id != this.id && (helper.canHelp())){ //a knight of space can't help themselves.
-                 ////print("Debugging helpers: Found $helper in session ${session.session_id}");
-                 //print("found a knight");
+                 ////;
+                 //;
                  return helper;
              }else{
                 helper = null; //clear the helper out or knights of space are gonna be op as fuck. they were storing that if there were no sorted choices.
@@ -1833,12 +2014,12 @@ class Player extends GameEntity{
          }
         //time players often partner up with themselves
         if(aspect == Aspects.TIME && rand.nextDouble() > .2){
-            ////print("Debugging helpers: Found $helper in session ${session.session_id}");
-            //print("i'm a time player i can copy");
+            ////;
+            //;
 
             return this;
         }
-        //print("found a helper $helper before the sort list.");
+        //;
         //players are naturally sorted by mobility
         List<Player> sortedChoices = new List<Player>.from(players)..sort(Stats.MOBILITY.sorter);
         for(Player p in sortedChoices) {
@@ -1846,17 +2027,17 @@ class Player extends GameEntity{
                 //space players are stuck on their land till they get their frog together.
                 if((p.aspect != Aspects.SPACE || p.landLevel > session.goodFrogLevel)  && p.canHelp()) {
                     helper = p;
-                    //print("randomly picking helper with an id of $helper");
+                    //;
                 }
             }else if(((p.class_name == SBURBClassManager.PAGE || p.aspect == Aspects.BLOOD) && p.id != this.id) && p.canHelp()) { //these are GUARANTEED to have helpers. not part of a big stupid if though in case i want to make it just higher odds l8r
                 helper = p;
-               // print("i believe i'm a blood player or a page and picked helper $helper");
+               // ;
             }
         }
-        //print("found a helper $helper through the sort list.");
+        //;
 
         //could be null, not 100% chance of helper
-        ////print("Debugging helpers: Found helper $helper for player $this in session ${session.session_id}");
+        ////;
         return helper;
     }
 
@@ -1959,11 +2140,11 @@ class Player extends GameEntity{
         if (this.class_name == SBURBClassManager.WITCH || luck < -9) {
             if(deriveSprite) this.object_to_prototype = this.session.rand.pickFrom(PotentialSprite.disastor_objects);
             this.object_to_prototype.session = session;
-            ////print("disastor");
+            ////;
         } else if (luck > 25) {
             if(deriveSprite) this.object_to_prototype = this.session.rand.pickFrom(PotentialSprite.fortune_objects);
             this.object_to_prototype.session = session;
-            ////print("fortune");
+            ////;
         }
         if (luck > 5) {
             this.godDestiny = true;
@@ -1990,7 +2171,7 @@ class Player extends GameEntity{
                 this.fraymotifs.add(f);
             }
         }
-        //print("At init, $this has health of ${getStat(Stats.HEALTH)}");
+        //;
     }
 
     //TODO make all this shit down here static or put in other places.
@@ -2016,13 +2197,14 @@ class Player extends GameEntity{
     //TODO how do you NORMALLY make deep copies of things when all objects aren't secretly hashes?
     //get rid of thigns doomed time players were using. they are just players. just like this is just a player
     //until ll8r when i bother to make it a mini class of just stats.
-    static Player makeRenderingSnapshot(Player player) {
+    static Player makeRenderingSnapshot(Player player, [bool saveCanvas = true]) {
         Player ret = new Player(player.session, player.class_name, player.aspect, player.object_to_prototype, player.moon, player.godDestiny);
         ret.robot = player.robot;
+        ret.specibus = player.specibus.copy();
         ret.gnosis = player.gnosis;
-        ret.spriteCanvasID = player.spriteCanvasID;
         ret.doomed = player.doomed;
         ret.ghost = player.ghost;
+        ret.brainGhost = player.brainGhost;
         ret.causeOfDrain = player.causeOfDrain;
         ret.session = player.session;
         ret.id = player.id;
@@ -2053,13 +2235,22 @@ class Player extends GameEntity{
         ret.interest1 = player.interest1;
         ret.interest2 = player.interest2;
         ret.stats = player;
+        ret.dreamPalette = player.dreamPalette;
+        //;
+        if(saveCanvas && player.canvas != null) {
+            ret.canvas = player.canvas; //you're just for rendering
+        }else if(!saveCanvas) {
+           // ;
+            ret.canvas = null; //re render yourself. you're a ghost or a doomed time clone or some shit
+        }
         return ret;
     }
 
 
     //TODO has specific 'doomed time clone' stuff in it, like randomizing state
     static Player makeDoomedSnapshot(Player doomedPlayer) {
-        Player timeClone = Player.makeRenderingSnapshot(doomedPlayer);
+        Session session = doomedPlayer.session;
+        Player timeClone = Player.makeRenderingSnapshot(doomedPlayer,false);
         timeClone.dead = false;
         timeClone.ectoBiologicalSource = -612; //if they somehow become players, you dn't make babies of them.
         timeClone.prophecy = ProphecyState.ACTIVE;
@@ -2094,17 +2285,18 @@ class Player extends GameEntity{
         }
 
         if (timeClone.godTier) {
-            Fraymotif f = curSessionGlobalVar.fraymotifCreator.makeFraymotif(doomedPlayer.rand, <Player>[doomedPlayer], 3); //first god tier fraymotif
+            Fraymotif f = session.fraymotifCreator.makeFraymotif(doomedPlayer.rand, <Player>[doomedPlayer], 3); //first god tier fraymotif
             timeClone.fraymotifs.add(f);
         }
 
         if (timeClone.getStat(Stats.POWER) > 50) {
-            Fraymotif f = curSessionGlobalVar.fraymotifCreator.makeFraymotif(doomedPlayer.rand, <Player>[doomedPlayer], 2); //probably beat denizen at least
+            Fraymotif f = session.fraymotifCreator.makeFraymotif(doomedPlayer.rand, <Player>[doomedPlayer], 2); //probably beat denizen at least
             timeClone.fraymotifs.add(f);
         }
 
-        Fraymotif f = curSessionGlobalVar.fraymotifCreator.makeFraymotif(doomedPlayer.rand, <Player>[doomedPlayer], 1); //at least did first quest
+        Fraymotif f = session.fraymotifCreator.makeFraymotif(doomedPlayer.rand, <Player>[doomedPlayer], 1); //at least did first quest
         timeClone.fraymotifs.add(f);
+        timeClone.renderSelf("doomed time clone");
 
         return timeClone;
     }

@@ -10,6 +10,20 @@ import "../../../Lands/Quest.dart";
 
 
 class Witch extends SBURBClass {
+
+    @override
+    String sauceTitle = "Warlock";
+
+    //what sort of quests rewards do I get?
+    //witches have familiars, spells and potions
+    @override
+    double itemWeight = 0.51;
+    @override
+    double fraymotifWeight = 0.51;
+    @override
+    double companionWeight = 0.51;
+
+
     @override
     List<String> levels = ["WESTWORD WORRYBITER", "BUBBLETROUBLER", "EYE OF GRINCH"];
     @override
@@ -142,7 +156,7 @@ class Witch extends SBURBClass {
                 new Quest("A young ${Quest.CONSORT} approaches the ${Quest.PLAYER1}. They wish to learn how to be magical, too!  The ${Quest.PLAYER1} dubs them the ${Quest.MCGUFFIN}mancer and agrees to train them. "),
                 new Quest("The ${Quest.PLAYER1} has barely begun to train the ${Quest.MCGUFFIN}mancer, but needs to head into town to fetch a few ingredients.   The ${Quest.MCGUFFIN}mancer promises to be good, and IMMEDIATELY starts fucking shit up on accident with magic. Oh god, why are all those ${Quest.PHYSICALMCGUFFIN}s suddenly alive?  When the ${Quest.PLAYER1} returns, they use this as an opportunity to teach the ${Quest.MCGUFFIN}mancer a valuable moral. "),
                 new Quest("The ${Quest.MCGUFFIN}mancer is ready to show off their power to the other ${Quest.CONSORT}s. They ${Quest.CONSORTSOUND} in amazement to see the things the ${Quest.MCGUFFIN}mancer can do! The ${Quest.PLAYER1} was a good mentor.  ")
-            ], new FraymotifReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
+            ], new RandomReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
 
             ,  Theme.MEDIUM);
     }

@@ -6,6 +6,10 @@ import "FeatureTypes/QuestChainFeature.dart";
 
 
 class Battlefield extends Land {
+
+    Carapace whiteKing;
+    Carapace blackKing;
+
     @override
     FeatureTemplate featureTemplate = FeatureTemplates.SKAIA;
 
@@ -27,17 +31,45 @@ class Battlefield extends Land {
         this.processConsort();
     }
 
+    void spawnKings() {
+            this.whiteKing = new Carapace("White King", session,Carapace.PROSPIT,firstNames: <String>["Winsome","Windswept","Warweary","Wandering","Wondering"], lastNames: <String>["Kindred","Knight","Keeper","Kisser"], ringFirstNames: <String>["White"], ringLastNames: ["King"]);
+            whiteKing.royalty = true; //do before crowning, to avoid ab being confused
+            this.whiteKing.sylladex.add(session.prospitScepter);
+            this.whiteKing.name = "White King"; //override crowned name
+            this.whiteKing.specibus = new Specibus("Backup Scepter", ItemTraitFactory.STICK, [ ItemTraitFactory.KINGLY]);
+            whiteKing.grist = 1000;
+            whiteKing.description = "The White King is destined to be defeated on Skaia's Battlefield so that the Reckoning may be started with his Scepter.";
+            //white king is destined to be defeatd by black, so is much weaker base
+            whiteKing.stats.setMap(<Stat, num>{Stats.HEALTH: 100, Stats.FREE_WILL: -100, Stats.POWER: 10});
+            whiteKing.heal();
+            whiteKing.scenesToAdd.insert(0, new StartReckoning(session));
+
+            this.blackKing = new Carapace("Black King", session,Carapace.DERSE,firstNames: <String>["Bombastic","Bitter","Batshit","Boring","Brutal","Burger"], lastNames: <String>["Keeper","Knave","Key","Killer"], ringFirstNames: <String>["Black"], ringLastNames: ["King"]);
+            blackKing.royalty = true; //do before crowning, to avoid ab being confused
+            this.blackKing.sylladex.add(session.derseScepter);
+            this.blackKing.name = "Black King"; //override crowned name
+            blackKing.description = "The Black King is destined to defeat his counterpart on Skaia's Battlefield so that the Reckoning may be started with the twin Scepters.";
+            //black king should be stronger than white king. period.
+            this.blackKing.specibus = new Specibus("Backup Scepter", ItemTraitFactory.STICK, [ ItemTraitFactory.KINGLY]);
+            blackKing.grist = 1000;
+            blackKing.stats.setMap(<Stat, num>{Stats.HEALTH: 1000, Stats.FREE_WILL: -100, Stats.POWER: 100});
+            blackKing.scenesToAdd.insert(0, new KillWhiteKing(session));
+            blackKing.scenesToAdd.insert(0, new StartReckoning(session));
+            blackKing.heal();
+
+    }
+
     @override
     String get shortName {
         return "Skaia:";
     }
 
     void processBattlefieldShit( Map<QuestChainFeature, double> features) {
-        // print("Processing moon shit: ${features.keys}");
+        // ;
         for(QuestChainFeature f in features.keys) {
-            // print("checking if ${f} is a moon quest.  ${f is MoonQuestChainFeature}");
+            // ;
             if(f is SkaiaQuestChainFeature) {
-                //print("adding moon quest chain");
+                //;
                 battleFieldQuestChains.add(f, features[f]);
             }
         }
@@ -53,7 +85,7 @@ class Battlefield extends Land {
         if(symbolicMcguffin == null) decideMcGuffins(players.first);
         //first, do i have a current quest chain?
         if(currentQuestChain == null) {
-            //print("going to pick a moon quest from ${moonQuestChains}");
+            //;
             currentQuestChain = selectQuestChainFromSource(players, battleFieldQuestChains);
             //nobody else can do this.
             if(!currentQuestChain.canRepeat) battleFieldQuestChains.remove(currentQuestChain);
@@ -71,7 +103,7 @@ class Battlefield extends Land {
         if(currentQuestChain.finished){
             currentQuestChain = null;
         }
-        //print("ret is $ret from $currentQuestChain");
+        //;
         return ret;
     }
 

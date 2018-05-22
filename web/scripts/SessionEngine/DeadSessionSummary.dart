@@ -2,6 +2,7 @@ import "DeadSession.dart";
 import "../SBURBSim.dart";
 import "../navbar.dart";
 
+import "SessionSummaryLib.dart";
 
 //has less or different fields.
 class DeadSessionSummary extends SessionSummary {
@@ -16,6 +17,7 @@ class DeadSessionSummary extends SessionSummary {
         html = "$html<Br><b> Session</b>: <a href = 'dead_index.html?seed=${this.session_id}&$params'>${this.session_id}</a>";
         html = "$html<Br><b>Players</b>: ${getPlayersTitlesBasic(this.players)}";
         html = "$html<Br><b>mvp</b>: ${this.mvp.htmlTitle()} With a Grist Level of: ${this.mvp.grist}";
+        html = "$html<Br><b>Metaplayer</b>: ${this.metaPlayer}";
         html = "$html${generateNumHTML()}";
         html = "$html${generateBoolHTML()}";
 
@@ -36,6 +38,7 @@ class DeadSessionSummary extends SessionSummary {
         summary.setBoolStat("choseGodTier", session.stats.choseGodTier);
         summary.setBoolStat("won", session.stats.won);
         summary.ghosts = session.afterLife.ghosts;
+        summary.metaPlayer = session.metaPlayer.htmlTitleBasic();
         summary.setNumStat("sizeOfAfterLife", session.afterLife.ghosts.length);
         summary.setBoolStat("heroicDeath", session.stats.heroicDeath);
         summary.setBoolStat("justDeath", session.stats.justDeath);
@@ -65,18 +68,27 @@ class DeadSessionSummary extends SessionSummary {
         summary.setNumStat("num_scenes", session.numScenes);
         summary.players = session.players;
         summary.mvp = findMVP(session.players);
-        summary.setNumStat("numLiving", findLivingPlayers(session.players).length);
+        summary.setNumStat("numLiving", findLiving(session.players).length);
         summary.setNumStat("numDead", findDeadPlayers(session.players).length);
         summary.setBoolStat("denizenBeat", session.stats.denizenBeat);
-        summary.setBoolStat("plannedToExileJack", session.stats.plannedToExileJack);
-        summary.setBoolStat("exiledJack", session.npcHandler.jack.exiled);
-        summary.setBoolStat("exiledQueen", session.npcHandler.queen.exiled);
-        summary.setBoolStat("jackGotWeapon", session.stats.jackGotWeapon);
-        summary.setBoolStat("jackRampage", session.stats.jackRampage);
-        summary.setBoolStat("jackScheme", session.stats.jackScheme);
+        summary.setBoolStat("exiledQueen", session.derse.queen.exiled);
+
         summary.setBoolStat("queenRejectRing", session.stats.queenRejectRing);
         summary.setBoolStat("murderMode", session.stats.murdersHappened);
         summary.setBoolStat("grimDark", session.stats.grimDarkPlayers);
+        /*
+            bool cataclysmCrash = false;
+    bool redMilesActivated = false;
+    bool moonDestroyed = false;
+    bool planetDestroyed = false;
+    bool crownedCarapace = false;
+         */
+        summary.setBoolStat("redMilesActivated", session.stats.redMilesActivated);
+        summary.setBoolStat("moonDestroyed", session.stats.moonDestroyed);
+        summary.setBoolStat("planetDestroyed", session.stats.planetDestroyed);
+        summary.setBoolStat("crownedCarapace", session.stats.crownedCarapace);
+        summary.setBoolStat("mailQuest", session.stats.mailQuest);
+
 
 
         return summary;
@@ -103,12 +115,6 @@ class DeadMultiSessionSummary extends MultiSessionSummary {
     setStat("choseGodTier", 0);
     setStat("timesAllLived", 0);
     setStat("denizenBeat", 0);
-    setStat("plannedToExileJack", 0);
-    setStat("exiledJack", 0);
-    setStat("exiledQueen", 0);
-    setStat("jackGotWeapon", 0);
-    setStat("jackRampage", 0);
-    setStat("jackScheme", 0);
     setStat("queenRejectRing", 0);
     setStat("democracyStarted", 0);
     setStat("murderMode", 0);
@@ -126,13 +132,26 @@ class DeadMultiSessionSummary extends MultiSessionSummary {
     setStat("hasFreeWillEvents", 0);
     setStat("hasGhostEvents", 0);
 
+    /*
+        bool cataclysmCrash = false;
+    bool redMilesActivated = false;
+    bool moonDestroyed = false;
+    bool planetDestroyed = false;
+    bool crownedCarapace = false;
+     */
+    setStat("planetDestroyed", 0);
+    setStat("redMilesActivated", 0);
+    setStat("moonDestroyed", 0);
+    setStat("crownedCarapace", 0);
+    setStat("mailQuest", 0);
+
     setStat("crashedFromSessionBug", 0);
     setStat("averageGrist", 0);
     }
 
 
     static DeadMultiSessionSummary collateMultipleSessionSummaries(List<DeadSessionSummary> sessionSummaries) {
-        print("making dead mss");
+        ;
         DeadMultiSessionSummary mss = new DeadMultiSessionSummary();
         mss.setClasses();
         mss.setAspects();
@@ -152,12 +171,13 @@ class DeadMultiSessionSummary extends MultiSessionSummary {
                 if (ss.getNumStat("numLiving") == 0) mss.incNumStat("timesAllDied");
             if (ss.getNumStat("numDead") == 0) mss.incNumStat("timesAllLived");
             if (ss.getBoolStat("denizenBeat")) mss.incNumStat("denizenBeat");
-            if (ss.getBoolStat("plannedToExileJack")) mss.incNumStat("plannedToExileJack");
-            if (ss.getBoolStat("exiledJack")) mss.incNumStat("exiledJack");
-            if (ss.getBoolStat("exiledQueen")) mss.incNumStat("exiledQueen");
-            if (ss.getBoolStat("jackGotWeapon")) mss.incNumStat("jackGotWeapon");
-            if (ss.getBoolStat("jackRampage")) mss.incNumStat("jackRampage");
-            if (ss.getBoolStat("jackScheme")) mss.incNumStat("jackScheme");
+
+            if (ss.getBoolStat("redMilesActivated")) mss.incNumStat("redMilesActivated");
+            if (ss.getBoolStat("moonDestroyed")) mss.incNumStat("moonDestroyed");
+            if (ss.getBoolStat("planetDestroyed")) mss.incNumStat("planetDestroyed");
+            if (ss.getBoolStat("crownedCarapace")) mss.incNumStat("crownedCarapace");
+            if (ss.getBoolStat("mailQuest")) mss.incNumStat("mailQuest");
+
             if (ss.getBoolStat("queenRejectRing")) mss.incNumStat("queenRejectRing");
             if (ss.getBoolStat("murderMode")) mss.incNumStat("murderMode");
             if (ss.getBoolStat("grimDark")) mss.incNumStat("grimDark");
@@ -207,7 +227,7 @@ class DeadMultiSessionSummary extends MultiSessionSummary {
         mss.setStat("averageRelationshipValue", (mss.getNumStat("averageRelationshipValue") / sessionSummaries.length).round());
         mss.setStat("averageNumScenes", (mss.getNumStat("averageNumScenes") / sessionSummaries.length).round());
         mss.setStat("survivalRate", (100 * (mss.getNumStat("totalLivingPlayers") / (mss.getNumStat("totalLivingPlayers") + mss.getNumStat("totalDeadPlayers")))).round());
-        print("after creation $mss is: ${mss.num_stats}");
+        ;
         return mss;
     }
 

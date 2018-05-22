@@ -121,6 +121,13 @@ class ItemTraitFactory {
   static Iterable<ItemTrait> get objectTraits => allTraits.where((ItemTrait a) => (a is ItemObjectTrait));
   static Iterable<ItemTrait> get combinedTraits => allTraits.where((ItemTrait a) => (a is CombinedTrait));
 
+  static ItemTrait itemTraitNamed(String name) {
+    for(ItemTrait itemTrait in allTraits) {
+      if(itemTrait.descriptions.contains(name)) return itemTrait;
+    }
+    return null;
+  }
+
 
   //these are what shape it has? doubles as both specibus kinds and basic objects.
   static ItemObjectTrait GENERIC;
@@ -180,6 +187,7 @@ class ItemTraitFactory {
 
   //these would be "color" i guess? material it's made of?
   static ItemAppearanceTrait METAL;
+  static ItemAppearanceTrait DUTTON;
   static ItemAppearanceTrait CLAWS;
   static ItemAppearanceTrait CERAMIC;
   static ItemAppearanceTrait BONE;
@@ -199,6 +207,8 @@ class ItemTraitFactory {
   static ItemAppearanceTrait FEATHER;
   static ItemAppearanceTrait UGLY;
   static ItemAppearanceTrait LEGENDARY;
+  static ItemAppearanceTrait UNBEATABLE;
+
 
   static ItemFunctionTrait EDGED;
   static ItemFunctionTrait SCARY;
@@ -1322,6 +1332,7 @@ class ItemTraitFactory {
 
   static void initAppearances() {
     METAL = new ItemAppearanceTrait(<String>["metal"], 0.3,ItemTrait.MATERIAL);
+    DUTTON = new ItemAppearanceTrait(<String>["dutton"], 0.6,ItemTrait.ORIGIN);
     CERAMIC = new ItemAppearanceTrait(<String>["ceramic"], -0.3,ItemTrait.MATERIAL);
     BONE = new ItemAppearanceTrait(<String>["bone"], 0.2,ItemTrait.MATERIAL);
     WOOD = new ItemAppearanceTrait(<String>["wood"], -0.3,ItemTrait.MATERIAL);
@@ -1343,6 +1354,9 @@ class ItemTraitFactory {
     SHITTY = new ItemAppearanceTrait(<String>["shitty", "poorly made","conksuck", "piece-of-shit"], -13.0,ItemTrait.OPINION);
     STONE = new ItemAppearanceTrait(<String>["stone", "rock", "concrete"], 0.3,ItemTrait.MATERIAL);
     LEGENDARY = new ItemAppearanceTrait(<String>["legendary"], 13.0,ItemTrait.FIRST);
+    //like the rabbit.
+    UNBEATABLE = new ItemAppearanceTrait(<String>["Unbeatable"], 40.37,ItemTrait.FIRST);
+
   }
 
   static void initFunctions() {

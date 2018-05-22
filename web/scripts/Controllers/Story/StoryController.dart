@@ -6,10 +6,13 @@ import 'dart:typed_data';
 import 'dart:collection';
 
 //replaces the poorly named scenario_controller2.js
-void main() {
+Future<Null> main() async {
+  await globalInit();
+  sowChaos();
+
   //maybe if i define it here it won't be the same as end time
   startTime =new DateTime.now();
-  //print("If you are in dartium, make sure to select this file to access it's global vars");
+  //;
   new DateTime.now();
   new Timer(new Duration(milliseconds: 1000), () =>window.scrollTo(0, 0));
 
@@ -17,7 +20,7 @@ void main() {
   window.onError.listen((Event event){
   	ErrorEvent e = event as ErrorEvent;
     //String msg, String url, lineNo, columnNo, error
-    printCorruptionMessage(e);//(e.message, e.path.toString(), e.lineno.toString(), e.colno.toString(), e.toString());
+    printCorruptionMessage(SimController.instance.currentSessionForErrors,e);//(e.message, e.path.toString(), e.lineno.toString(), e.colno.toString(), e.toString());
     return;
   });
   loadNavbar();
@@ -32,8 +35,24 @@ void main() {
   }
 
   SimController.instance.shareableURL();
+  startSession();
 
-  SimController.instance.startSession();
+}
+
+Future<Null> startSession() async {
+  Session session = new Session(SimController.instance.initial_seed);
+  checkEasterEgg(session);
+  await session.startSession();
+  print("I think the session stopped!");
+}
+
+//sauce jr, what are you doing. stahp.
+void sowChaos() {
+  DateTime now = new DateTime.now();
+  if(now.month == 4 && now.day == 1) {
+    window.alert("You know. I think I can do better than this.  Why not just....meteor shit. Start from scratch??? Get a sweet graphical update.");
+    window.location.href = "http://www.farragofiction.com/LifeSim/";
+  }
 }
 
 class StoryController extends SimController {

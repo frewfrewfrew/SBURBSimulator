@@ -24,7 +24,7 @@ abstract class Loader {
         Formats.init();
     }
 
-    static Future<T> getResource<T>(String path, {FileFormat<T, dynamic> format, bool bypassManifest = false}) async {
+    static Future<T> getResource<T>(String path, {FileFormat<T, dynamic> format, bool bypassManifest = false, bool absoluteRoot = false}) async {
         init();
         if (_resources.containsKey(path)) {
             Resource<dynamic> res = _resources[path];
@@ -40,18 +40,22 @@ abstract class Loader {
         } else {
             if (!bypassManifest) {
                 if (manifest == null) {
-                    manifest = await Loader.getResource("manifest/manifest.txt", format: Formats.manifest, bypassManifest: true);
+                    await loadManifest();
                 }
 
                 String bundle = manifest.getBundleForFile(path);
 
                 if (bundle != null) {
-                    _loadBundle(bundle);
-                    return _createResource(path).addListener();
+                    await _loadBundle(bundle);
+                    return _createResource(path).object;
                 }
             }
-            return _load(path, format);
+            return _load(path, format: format, absoluteRoot: absoluteRoot);
         }
+    }
+
+    static Future<Null> loadManifest() async {
+        manifest = await Loader.getResource("manifest/manifest.txt", format: Formats.manifest, bypassManifest: true);
     }
 
     static Resource<T> _createResource<T>(String path) {
@@ -61,7 +65,7 @@ abstract class Loader {
         return _resources[path];
     }
 
-    static Future<T> _load<T>(String path, [FileFormat<T, dynamic> format = null]) {
+    static Future<T> _load<T>(String path, {FileFormat<T, dynamic> format = null, bool absoluteRoot = false}) {
         if(_resources.containsKey(path)) {
             throw "Resource $path has already been requested for loading";
         }
@@ -73,15 +77,36 @@ abstract class Loader {
 
         Resource<T> res = _createResource(path);
 
-        format.requestObjectFromUrl(PathUtils.adjusted(path))..then((T item) => res.populate(item));
+        format.requestObjectFromUrl(_getFullPath(path, absoluteRoot))..then((T item) => res.populate(item));
 
         return res.addListener();
     }
 
-    static Future<bool> _loadBundle(String path) async {
+    /// Sets a resource at a specified path to an object, does not load a file
+    static void assignResource<T>(T object, String path) {
+        _createResource(path).object = object;
+    }
+
+    /// Removes a resource from the listings, and completes any waiting gets with an error state
+    static void purgeResource(String path) {
+        if (_resources.containsKey(path)) {
+            Resource<dynamic> r = _resources[path];
+            for(Completer<dynamic> c in r.listeners) {
+                if (!c.isCompleted) {
+                    c.completeError("Resource purged");
+                }
+            }
+        }
+        _resources.remove(path);
+    }
+
+    static Future<Null> _loadBundle(String path) async {
         Archive bundle = await Loader.getResource("$path.bundle", bypassManifest: true);
 
         String dir = path.substring(0, path.lastIndexOf(_slash));
+
+        Completer<Null> completer = new Completer<Null>();
+        List<Future<dynamic>> fileFutures = <Future<dynamic>>[];
 
         for (ArchiveFile file in bundle.files) {
             String extension = file.name.split(".").last;
@@ -89,21 +114,29 @@ abstract class Loader {
 
             String fullname = "$dir/${file.name}";
 
-            Resource<dynamic> res = _createResource(fullname);
+            if (_resources.containsKey(fullname)) {
+                fileFutures.add(getResource(fullname));
+                continue;
+            }
 
             Uint8List data = file.content as Uint8List;
 
-            format.read(await format.fromBytes(data.buffer)).then(res.populate);
+            Resource<dynamic> res = _createResource(fullname);
+            fileFutures.add(res.addListener());
+
+            format.fromBytes(data.buffer).then((dynamic thing) { format.read(thing).then(res.populate); });
         }
 
-        return true;
+        Future.wait(fileFutures).then((List<dynamic> list) { completer.complete(); });
+
+        return completer.future;
     }
 
     // JS loading extra special dom stuff
 
     static Map<String, ScriptElement> _loadedScripts = <String, ScriptElement>{};
 
-    static Future<ScriptElement> loadJavaScript(String path) async {
+    static Future<ScriptElement> loadJavaScript(String path, [bool absoluteRoot = false]) async {
         if (_loadedScripts.containsKey(path)) {
             return _loadedScripts[path];
         }
@@ -112,9 +145,23 @@ abstract class Loader {
         ScriptElement script = new ScriptElement();
         document.head.append(script);
         script.onLoad.listen((Event e) => completer.complete(script));
-        script.src = PathUtils.adjusted(path);
+        script.src = _getFullPath(path, absoluteRoot);
 
         return completer.future;
+    }
+
+    static String _getFullPath(String path, [bool absoluteRoot = false]) {
+        // treat leading slashes as absolute root anyway
+        if (path.startsWith("/")) {
+            absoluteRoot = true;
+            path = path.substring(1);
+        }
+
+        if (absoluteRoot) {
+            String abspath = "${window.location.protocol}//${window.location.host}/$path";
+            return abspath;
+        }
+        return PathUtils.adjusted(path);
     }
 }
 

@@ -7,6 +7,18 @@ import "../../../Lands/Reward.dart";
 import "../../../Lands/Quest.dart";
 
 class Muse extends SBURBClass {
+
+    @override
+    String sauceTitle = "Wayward";
+
+    //what sort of quests rewards do I get?
+    @override
+    double itemWeight = 0.51;
+    @override
+    double fraymotifWeight = 0.01;
+    @override
+    double companionWeight = 2.01;
+
     @override
     List<String> levels = ["AMUSING AMATEUR", "SPOTLIGHT POINTER", "GREEK GOD"];
     @override
@@ -54,10 +66,10 @@ class Muse extends SBURBClass {
     @override
     bool isActive([double multiplier = 0.0]) {
         if(multiplier < 0) { //if no stat passed, act passive
-           // print("Muse taking in the bad of stat");
+           // ;
             return true; //muse applies it to self if bad.
         }
-       // print("Muse distributing the good of stat");
+       // ;
         return false; //to others if good.
     }
 
@@ -135,7 +147,7 @@ class Muse extends SBURBClass {
                 new Quest("You'd think after the dramatic defeat of the ${Quest.DENIZEN} the ${Quest.CONSORT}s would be celebrating. Instead they are just kind of moping around. When pressed, they say they just don't feel like doing anything. "),
                 new Quest("The ${Quest.PLAYER1} bugs and fusses and meddles until the ${Quest.CONSORT}s agree to put on a performance of the musical 'The Lonely ${Quest.PHYSICALMCGUFFIN}'. The ${Quest.PLAYER1} assigns parts that challenge each of them without seeming impossible."),
                 new Quest("The performance of The Lonely ${Quest.PHYSICALMCGUFFIN} goes off without a hitch. The ${Quest.CONSORT}s recieve accolades and ALL the self esteems.  They are inspired to reach ever greater heights of acomplishments. ")
-            ], new FraymotifReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
+            ], new RandomReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
             ,  Theme.MEDIUM);
     }
 

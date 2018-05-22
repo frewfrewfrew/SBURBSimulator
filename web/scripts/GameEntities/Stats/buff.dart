@@ -156,14 +156,74 @@ class BuffSpecibus extends Buff {
         }
         if (stat.pickable) {
             if(stat == Stats.HEALTH || stat == Stats.CURRENT_HEALTH || stat == Stats.POWER) {
-                //print("buff health stat");
-                if(val * gameEntity.specibus.rank <1) return 1.0;
-                return val * gameEntity.specibus.rank;
+                double ret = val * gameEntity.specibus.rank;
+                //print("buff health stat ret is $ret");
+                if(ret <1) {
+                    //print("NEGATIVE buff health stat ret is $ret  for $gameEntity so am returning 1.0 instead.");
+                    return 1.0;
+                }
+                return ret;
             }else {
                 return val * gameEntity.specibus.rank;
             }
         }
         return val;
+    }
+}
+
+
+//JR here, derping around in teh code. Sorry PL.
+class BuffLord extends Buff {
+    //lords get buffs based on their living minions
+    GameEntity gameEntity;
+
+
+    BuffLord(this.gameEntity):super.multiple(Stats.all, false, false){
+        this.persistsThroughDeath = true;
+    }
+
+    @override
+    Buff copy() {
+        return new BuffSpecibus(gameEntity);
+    }
+
+    @override
+    double additional(StatHolder holder, Stat stat, double val) {
+        //in theory other things but lords could get this buff, too, eventually
+        //and if you change into a Lord suddenly you still get your buff.
+        if(!(gameEntity is Player)) {
+            return val;
+        }else {
+            Player p = gameEntity as Player;
+            if(p.class_name != SBURBClassManager.LORD) return val;
+        }
+
+        if (stat == Stats.SBURB_LORE ) {
+            return val;
+        }
+        if (stat.pickable) {
+            if(stat == Stats.HEALTH || stat == Stats.CURRENT_HEALTH || stat == Stats.POWER) {
+                //print("buff health stat");
+                if(val + sumMinionStats(holder, stat, val)<1) {
+                    print ("$gameEntity would have gotten negative hp from this shitty minion. ${val + sumMinionStats(holder, stat, val)}. They have ${gameEntity.companionsCopy.length} minions. And their natural hp would have been ${val}");
+                    return 1.0;
+                }
+                return val + sumMinionStats(holder, stat, val);
+            }else {
+                return val + sumMinionStats(holder, stat, val);
+            }
+        }
+        return val;
+    }
+
+    double sumMinionStats(StatHolder holder, Stat stat, double val) {
+        double ret = 0.0;
+        for(GameEntity g in gameEntity.companionsCopy) {
+            if(!g.dead) {
+                ret += g.getStat(stat);
+            }
+        }
+        return ret;
     }
 }
 

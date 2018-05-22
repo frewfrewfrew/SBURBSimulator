@@ -7,6 +7,15 @@ import "../../../Lands/Reward.dart";
 import "../../../Lands/Quest.dart";
 
 class Maid extends SBURBClass {
+
+    //what sort of quests rewards do I get?
+    @override
+    double itemWeight = 0.51;
+    @override
+    double fraymotifWeight = 0.01;
+    @override
+    double companionWeight = 0.51;
+
     @override
     List<String> levels = ["SCURRYWART SERVANT", "SAUCY PILGRIM", "MADE OF SUCCESS"];
     @override
@@ -59,6 +68,11 @@ class Maid extends SBURBClass {
     }
 
     @override
+    void processCard() {
+        storeCard("N4Igzg9grgTgxgUxALhAMQJYDsAmACAQzwFkCMcQAaELAgWyVQBEI8BhACwhgTCpAAuCAB4CUIACocEeOARgAHBALwYweADYQIAa2wBzPADMoWHQE9C+slgB0eCRgbHueCAHcsCHrQYw8AqwAbgRwUFB0ANx4eACC1tj2eACSRm6e3gi+3ngcBPgC0nh0EF6WRe7QGvg8ChqhMgQaGgFFRlrcBnjuGIV4QdjmGvZSWelePvQ5lVDVWADkKnlBMoH9oeF0hFjmJTxJyVhgQvnjmdn+M9W5BCsBrGDuCAgK2-glCkkA6h6UrWrGAhYAQEMCWIwYABekI0CHw0BUPCagOOtn4ACNQjp9DBoLgAHJTcQ-LD6WE-GA6WwKUn8AQwDD6fTeThAxDiAAMtgArPwwIgvGAJBAAKpYLRwHTiADaAF1+DwwLMBGAAMoglUy4AAHRoU11yF1quIAFEADJmvBfWIANRNqt1lF1IQ0UAQBt1AFoAEy6gC+8uo9MZzJg6oIKrNvDA3hlgcEDKZ3nDKoA4kihDA43TE6GU2ATQBHKBNbN+oA");
+    }
+
+    @override
     double getAttackerModifier() {
         return 0.33;
     }
@@ -100,7 +114,7 @@ class Maid extends SBURBClass {
                 new Quest("The ${Quest.PLAYER1} has adopted a local ${Quest.CONSORT} child to be their dear, sweet, precious daughter. It is time for them to go off to school.  Other ${Quest.CONSORT} parents ask the ${Quest.PLAYER1} to join the PTA."),
                 new Quest("The PTA has the ${Quest.PLAYER1} running ragged. It seems like every time they turn around it's another thing they are ${Quest.CONSORTSOUND}ing about. "),
                 new Quest("All this time catering to the PTA has paid off. Not only is the ${Quest.PLAYER1}'s dear sweet precious ${Quest.CONSORT} daughter doing well in school, but the ${Quest.PLAYER1} has been elected president of the PTA! They now have the ability to make real changes.  Somehow this feels even more satisfying than defeating the ${Quest.DENIZEN}. ")
-            ], new FraymotifReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
+            ], new RandomReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
             ,  Theme.MEDIUM);
     }
 

@@ -159,7 +159,7 @@ abstract class Drawing {
         int width = img.width;
         int height = img.height;
 
-        CanvasElement rainbow_canvas = getBufferCanvas(querySelector("#rainbow_template"));
+        CanvasElement rainbow_canvas = getBufferCanvas(SimController.rainbowTemplateWidth, SimController.rainbowTemplateHeight);
         CanvasRenderingContext2D rctx = rainbow_canvas.context2D;
         rctx.drawImage(img, 0, 0);
         ImageData img_data_rainbow = rctx.getImageData(0, 0, width, height);
@@ -215,7 +215,7 @@ abstract class Drawing {
         int width = img.width;
         int height = img.height;
 
-        CanvasElement rainbow_canvas = getBufferCanvas(querySelector("#rainbow_template"));
+        CanvasElement rainbow_canvas = getBufferCanvas(SimController.rainbowTemplateWidth, SimController.rainbowTemplateHeight);
         CanvasRenderingContext2D rctx = rainbow_canvas.context2D;
         rctx.drawImage(img, 0, 0);
         ImageData img_data_rainbow = rctx.getImageData(0, 0, width, height);
@@ -243,7 +243,7 @@ abstract class Drawing {
         int width = img.width;
         int height = img.height;
 
-        CanvasElement rainbow_canvas = getBufferCanvas(querySelector("#rainbow_template"));
+        CanvasElement rainbow_canvas = getBufferCanvas(SimController.rainbowTemplateWidth, SimController.rainbowTemplateHeight);
         CanvasRenderingContext2D rctx = rainbow_canvas.context2D;
         rctx.drawImage(img, 0, 0);
         ImageData img_data_rainbow = rctx.getImageData(0, 0, width, height);
@@ -419,7 +419,7 @@ abstract class Drawing {
     //parse horns sprite sheet. render a random right horn.
     //right horn should be at: 120,40
     static void rightHorn(CanvasElement canvas, Player player) {
-        // //print("doing right horn");
+        // //;
         CanvasRenderingContext2D ctx = canvas.getContext('2d');
 
         String imageString = "Horns/right${player.rightHorn}.png";
@@ -470,12 +470,12 @@ abstract class Drawing {
         String canvasId = "${div.id}commune_${player.chatHandle}${ghost.chatHandle}";
         CanvasElement canvas = new CanvasElement(width: canvasWidth, height: canvasHeight);
         div.append(canvas);
-        CanvasElement pSpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement pSpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawSprite(pSpriteBuffer, player);
-        CanvasElement gSpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement gSpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawSpriteTurnways(gSpriteBuffer, ghost);
 
-        //CanvasElement canvasBuffer = getBufferCanvas(querySelector("#canvas_template"));
+        //CanvasElement canvasBuffer = getBufferCanvas(SimController.canvasTemplateWidth, SimController.canvasTemplateHeight);
 
         //leave room on left for possible 'guide' player.
         if (enablingAspect == Aspects.LIFE) {
@@ -501,14 +501,14 @@ abstract class Drawing {
         }
         List<CanvasElement> playerBuffers = <CanvasElement>[];
         List<CanvasElement> guardianBuffers = <CanvasElement>[];
-        CanvasElement leaderBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement leaderBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawSprite(leaderBuffer, leader);
         for (int i = 0; i < players.length; i++) {
-            playerBuffers.add(getBufferCanvas(querySelector("#sprite_template")));
+            playerBuffers.add(getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight));
             drawBabySprite(playerBuffers[i], players[i]); //,repeatTime);
         }
         for (int i = 0; i < guardians.length; i++) {
-            guardianBuffers.add(getBufferCanvas(querySelector("#sprite_template")));
+            guardianBuffers.add(getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight));
             drawBabySprite(guardianBuffers[i], guardians[i]); //,repeatTime);
         }
         //leader on far left, babies arranged to right.
@@ -548,8 +548,9 @@ abstract class Drawing {
         }
         List<CanvasElement> spriteBuffers = <CanvasElement>[];
         int startXpt = -235;
-        for (int i = 0; i < players.length; i++) {
-            spriteBuffers.add(getBufferCanvas(querySelector("#sprite_template")));
+        int numPlayers = Math.min(18, players.length);
+        for (int i = 0; i < numPlayers; i++) {
+            spriteBuffers.add(getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight));
             drawSprite(spriteBuffers[i], players[i]);
         }
 
@@ -571,22 +572,22 @@ abstract class Drawing {
 
     ///revives the player mid drawing because that is how the rendering works.
     static void drawCorpseSmooch(CanvasElement canvas, Player dead_player, Player royalty){
-        var pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+        var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         Drawing.drawSprite(pSpriteBuffer,royalty);
-
         dead_player.dead = true;
         dead_player.isDreamSelf = false;  //temporarily show non dream version
-        var dSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+        var dSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         Drawing.drawSpriteFromScratch(dSpriteBuffer,dead_player);
 
         Drawing.copyTmpCanvasToRealCanvasAtPos(canvas, pSpriteBuffer,0,0);
         Drawing.copyTmpCanvasToRealCanvasAtPos(canvas, dSpriteBuffer,200,0);
 
-        var moonBuffer = Drawing.getBufferCanvas(querySelector("#canvas_template"));
+        var moonBuffer = Drawing.getBufferCanvas(SimController.canvasTemplateWidth, SimController.canvasTemplateHeight);
         Drawing.drawMoon(moonBuffer, dead_player);
         dead_player.dreamSelf = false; //only one self now.
         dead_player.isDreamSelf = true;
         dead_player.makeAlive();
+
         Drawing.drawSprite(moonBuffer,dead_player);
         Drawing.copyTmpCanvasToRealCanvasAtPos(canvas, moonBuffer,600,0);
     }
@@ -599,12 +600,12 @@ abstract class Drawing {
         List<CanvasElement> live_spriteBuffers = <CanvasElement>[];
         List<CanvasElement> dead_spriteBuffers = <CanvasElement>[];
         for (int i = 0; i < live_players.length; i++) {
-            live_spriteBuffers.add(getBufferCanvas(querySelector("#sprite_template")));
+            live_spriteBuffers.add(getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight));
             drawSprite(live_spriteBuffers[i], live_players[i]);
         }
 
         for (int i = 0; i < dead_players.length; i++) {
-            dead_spriteBuffers.add(getBufferCanvas(querySelector("#sprite_template")));
+            dead_spriteBuffers.add(getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight));
             //drawBG(dead_spriteBuffers[i], "#00ff00", "#ff0000");
             drawWhatever(dead_spriteBuffers[i], dead_players[i].aspect.bigSymbolImgLocation);
             drawSprite(dead_spriteBuffers[i], dead_players[i]);
@@ -696,6 +697,10 @@ abstract class Drawing {
         ctx.fillText("Fraymotifs Unlocked: ", left_margin, current + line_height * i);
         ctx.fillText(player.fraymotifs.length.toString(), right_margin, current + line_height * i);
         i++;
+
+        ctx.fillText("Companions Gathered: ", left_margin, current + line_height * i);
+        ctx.fillText(player.companionsCopy.length.toString(), right_margin, current + line_height * i);
+        i++;
         ctx.fillText("Grim Dark Level: ", left_margin, current + line_height * i);
         ctx.fillText("${player.grimDark}/4", right_margin, current + line_height * i);
 
@@ -734,7 +739,7 @@ abstract class Drawing {
         }
         List<CanvasElement> spriteBuffers = <CanvasElement>[];
         for (int i = 0; i < players.length; i++) {
-            spriteBuffers.add(getBufferCanvas(querySelector("#sprite_template")));
+            spriteBuffers.add(getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight));
             drawSprite(spriteBuffers[i], players[i]);
         }
 
@@ -772,12 +777,12 @@ abstract class Drawing {
             return;
         }
         if (player.godTier) {
-            ////print("god tier");
+            ////;
             drawLevelUpGodTier(canvas, player);
             return;
         }
         //for echeladder
-        CanvasElement canvasSpriteBuffer = getBufferCanvas(querySelector("#canvas_template"));
+        CanvasElement canvasSpriteBuffer = getBufferCanvas(SimController.canvasTemplateWidth, SimController.canvasTemplateHeight);
         CanvasRenderingContext2D ctx = canvasSpriteBuffer.getContext('2d');
         String imageString = "echeladder.png";
         addImageTag(imageString);
@@ -794,14 +799,14 @@ abstract class Drawing {
             }
         }
 
-        CanvasElement pSpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement pSpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         if (player.dead) {
             drawSprite(pSpriteBuffer, player);
         } else {
             drawSprite(pSpriteBuffer, player);
         }
 
-        CanvasElement levelsBuffer = getBufferCanvas(querySelector("#echeladder_template"));
+        CanvasElement levelsBuffer = getBufferCanvas(SimController.echeladderTemplateWidth, SimController.echeladderTemplateHeight);
         writeLevels(levelsBuffer, player); //level_bg_colors,level_font_colors
 
         copyTmpCanvasToRealCanvasAtPos(canvas, pSpriteBuffer, 0, 0);
@@ -818,21 +823,22 @@ abstract class Drawing {
         }
 
         int leftMargin = 150;
-        CanvasElement levelBuffer = getBufferCanvas(querySelector("#godtierlevelup_template"));
+        CanvasElement levelBuffer = getBufferCanvas(SimController.godTierLevelUpTemplateWidth, SimController.godTierLevelUpTemplateHeight);
         drawBGRadialWithWidth(canvas, leftMargin, 650, 650, ReferenceColours.BLACK, player.aspect.palette.shirt_light); //650 is iold
 
 
-        CanvasElement symbolBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement symbolBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawGodSymbolBG(symbolBuffer, player);
 
-        CanvasElement godBuffer = getBufferCanvas(querySelector("#godtierlevelup_template"));
+        CanvasElement godBuffer = getBufferCanvas(SimController.godTierLevelUpTemplateWidth, SimController.godTierLevelUpTemplateHeight
+        );
         CanvasRenderingContext2D ctx = godBuffer.getContext('2d');
         String imageString = "godtierlevelup.png";
         addImageTag(imageString);
         ImageElement img = imageSelector(imageString);
         ctx.drawImage(img, 0, 0);
 
-        CanvasElement pSpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement pSpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         if (player.dead) {
             drawSprite(pSpriteBuffer, player);
         } else {
@@ -855,20 +861,20 @@ abstract class Drawing {
             return;
         }
         int leftMargin = 150;
-        CanvasElement codeBufer = getBufferCanvas(querySelector("#godtierlevelup_template"));
+        CanvasElement codeBufer = getBufferCanvas(SimController.godTierLevelUpTemplateWidth, SimController.godTierLevelUpTemplateHeight);
         drawWhatever(codeBufer, "cataclysm.png");
         swapColors(codeBufer, ReferenceColours.BLACK, player.aspect.palette.shirt_light);
 
 
-        CanvasElement colorBufferBuffer = getBufferCanvas(querySelector("#godtierlevelup_template"));
+        CanvasElement colorBufferBuffer = getBufferCanvas(SimController.godTierLevelUpTemplateWidth, SimController.godTierLevelUpTemplateHeight);
         //intent is code shows up behind them, in their shirt + aspect colors.
         drawSolidBG(colorBufferBuffer,  player.aspect.palette.aspect_light); //650 is iold
         //cataclysm
 
-        CanvasElement rainbowSpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement rainbowSpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawSprite(rainbowSpriteBuffer, player);
         rainbowSwap(rainbowSpriteBuffer);
-        CanvasElement pSpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement pSpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawSprite(pSpriteBuffer,player);
 
         copyTmpCanvasToRealCanvasAtPos(canvas, colorBufferBuffer, 0, 0);
@@ -919,10 +925,10 @@ abstract class Drawing {
 
 
     static void drawWhateverWithPalleteSwapCallback(CanvasElement canvas, String str, Player player, PaletteSwapCallback palleteSwapCallBack) {
-        CanvasElement temp = getBufferCanvas(canvas);
+        CanvasElement temp = getBufferCanvas(canvas.width, canvas.height);
 
         drawWhatever(temp, str);
-        ////print("drawing whatever with pallete swap of $palleteSwapCallBack");
+        ////;
         palleteSwapCallBack(temp, player); //regular, trickster, robo, whatever.
         canvas.context2D.drawImage(temp, 0,0);
     }
@@ -936,8 +942,8 @@ abstract class Drawing {
         addImageTag(imageString);
         ImageElement img = imageSelector(imageString);
         if (img == null) {
-            //print("img was null!");
-            //print("was looking for ${escapeId(imageString)}");
+            //;
+            //;
         }
         ctx.drawImage(img, 0, 0);
     }
@@ -1018,21 +1024,21 @@ abstract class Drawing {
         if (checkSimMode() == true) {
             return;
         }
-        CanvasElement canvasSpriteBuffer = getBufferCanvas(querySelector("#canvas_template"));
+        CanvasElement canvasSpriteBuffer = getBufferCanvas(SimController.canvasTemplateWidth, SimController.canvasTemplateHeight);
         CanvasRenderingContext2D ctx = canvasSpriteBuffer.getContext('2d');
         String imageString = "pesterchum.png";
         addImageTag(imageString);
         ImageElement img = imageSelector(imageString);
         ctx.drawImage(img, 0, 0);
 
-        CanvasElement p1SpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement p1SpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawSprite(p1SpriteBuffer, player1);
 
-        CanvasElement p2SpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement p2SpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawSpriteTurnways(p2SpriteBuffer, player2);
 
         //don't need buffer for text?
-        CanvasElement textSpriteBuffer = getBufferCanvas(querySelector("#chat_text_template"));
+        CanvasElement textSpriteBuffer = getBufferCanvas(SimController.chatTextTemplateWidth, SimController.chatTextTemplateHeight);
         String introText = "-- ${player1.chatHandle} [${player1.chatHandleShort()}] began pestering ";
         introText = "$introText${player2.chatHandle} [${player2.chatHandleShort()}] --";
         drawChatText(textSpriteBuffer, player1, player2, introText, chat);
@@ -1042,8 +1048,8 @@ abstract class Drawing {
 
         Relationship r1 = player1.getRelationshipWith(player2);
         Relationship r2 = player2.getRelationshipWith(player1);
-        CanvasElement r1SpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
-        CanvasElement r2SpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement r1SpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
+        CanvasElement r2SpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 
         if (r1.saved_type == r1.goodBig || r1.saved_type == r1.heart) {
             drawHeart(r1SpriteBuffer);
@@ -1073,7 +1079,7 @@ abstract class Drawing {
         //return true; // debugging, is loading the problem, or is this method?
         if (doNotRender == true) {
             //looking for rare sessions, or getting moon prophecies.
-            //  //print("no canvas, are we simulatating the simulation?");
+            //  //;
             return true;
         }
         return false;
@@ -1085,24 +1091,24 @@ abstract class Drawing {
             return;
         }
 
-        CanvasElement canvasSpriteBuffer = getBufferCanvas(querySelector("#canvas_template"));
+        CanvasElement canvasSpriteBuffer = getBufferCanvas(SimController.canvasTemplateWidth, SimController.canvasTemplateHeight);
         CanvasRenderingContext2D ctx = canvasSpriteBuffer.getContext('2d');
         String imageString = "pesterchum.png";
         addImageTag(imageString);
         ImageElement img = imageSelector(imageString);
         if (img == null) {
-            //print("img was null!");
-            //print("was looking for ${escapeId(imageString)}");
+            //;
+            //;
         }
         ctx.drawImage(img, 0, 0);
 
-        CanvasElement jrSpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement jrSpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawJR(jrSpriteBuffer);
 
-        CanvasElement pSpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement pSpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawSpriteTurnways(pSpriteBuffer, player);
 
-        CanvasElement textSpriteBuffer = getBufferCanvas(querySelector("#chat_text_template"));
+        CanvasElement textSpriteBuffer = getBufferCanvas(SimController.chatTextTemplateWidth, SimController.chatTextTemplateHeight);
         String introText = "-- jadedResearcher [JR] began pestering ";
         introText = "$introText${player.chatHandle} [${player.chatHandleShort()}] --";
         drawChatTextJRPlayer(textSpriteBuffer, introText, chat, player);
@@ -1123,6 +1129,13 @@ abstract class Drawing {
         drawChatNonPlayer(canvas, chat, "-- authorBot [AB] began pestering jadedResearcher" + " [JR] --", "ab.png", "jr.png", "AB:", "JR:", "#ff0000", "#3da35a");
     }
 
+    static void drawChatABShogun(CanvasElement canvas, String chat) {
+        if (checkSimMode() == true) {
+            return;
+        }
+        drawChatNonPlayer(canvas, chat, "-- authorBot [AB] began pestering ....Who the Fuck is This Asshole???" + " [Shogun] --", "ab.png", "shogun.png", "AB:", "Shogun:", "#ff0000", "#00ff00");
+    }
+
 
     static void drawChatJRAB(CanvasElement canvas, String chat) {
         if (checkSimMode() == true) {
@@ -1138,24 +1151,24 @@ abstract class Drawing {
         if (checkSimMode() == true) {
             return;
         }
-        CanvasElement canvasSpriteBuffer = getBufferCanvas(querySelector("#canvas_template"));
+        CanvasElement canvasSpriteBuffer = getBufferCanvas(SimController.canvasTemplateWidth, SimController.canvasTemplateHeight);
         CanvasRenderingContext2D ctx = canvasSpriteBuffer.getContext('2d');
         String imageString = "pesterchum.png";
         addImageTag(imageString);
         ImageElement img = imageSelector(imageString);
         if (img == null) {
-            //print("img was null!");
-            //print("was looking for ${escapeId(imageString)}");
+            //;
+            //;
         }
         ctx.drawImage(img, 0, 0);
 
-        CanvasElement p2SpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement p2SpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawWhateverTurnways(p2SpriteBuffer, player2PNG);
 
-        CanvasElement p1SpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement p1SpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawWhatever(p1SpriteBuffer, player1PNG);
         //don't need buffer for text?
-        CanvasElement textSpriteBuffer = getBufferCanvas(querySelector("#chat_text_template"));
+        CanvasElement textSpriteBuffer = getBufferCanvas(SimController.chatTextTemplateWidth, SimController.chatTextTemplateHeight);
         drawChatTextNonPlayer(textSpriteBuffer, introText, chat, player1Start, player2Start, player1Color, player2Color);
         //drawBG(textSpriteBuffer, "#ff9999", "#ff00ff") //test that it's actually being rendered.
         //p1 on left, chat in middle, p2 on right and flipped turnways.
@@ -1168,7 +1181,7 @@ abstract class Drawing {
 
     //hella simple, mostly gonna be used for corpses.
     static void drawSinglePlayer(CanvasElement canvas, Player player) {
-        CanvasElement p1SpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement p1SpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawSprite(p1SpriteBuffer, player);
         //drawBG(p1SpriteBuffer, "#ff9999", "#ff00ff");
         copyTmpCanvasToRealCanvasAtPos(canvas, p1SpriteBuffer, 0, 0);
@@ -1183,21 +1196,21 @@ abstract class Drawing {
         //debug("drawing chat");
         //draw sprites to buffer (don't want them pallete swapping each other)
         //then to main canvas
-        CanvasElement canvasSpriteBuffer = getBufferCanvas(querySelector("#canvas_template"));
+        CanvasElement canvasSpriteBuffer = getBufferCanvas(SimController.canvasTemplateWidth, SimController.canvasTemplateHeight);
         CanvasRenderingContext2D ctx = canvasSpriteBuffer.getContext('2d');
         String imageString = "pesterchum.png";
         addImageTag(imageString);
         ImageElement img = imageSelector(imageString);
         ctx.drawImage(img, 0, 0);
 
-        CanvasElement p1SpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement p1SpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawSprite(p1SpriteBuffer, player1);
 
-        CanvasElement p2SpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement p2SpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         drawSpriteTurnways(p2SpriteBuffer, player2);
 
         //don't need buffer for text?
-        CanvasElement textSpriteBuffer = getBufferCanvas(querySelector("#chat_text_template"));
+        CanvasElement textSpriteBuffer = getBufferCanvas(SimController.chatTextTemplateWidth, SimController.chatTextTemplateHeight);
         String introText = "-- ${player1.chatHandle} [${player1.chatHandleShort()}] began pestering ";
         introText = "$introText${player2.chatHandle} [${player2.chatHandleShort()}] --";
         drawChatText(textSpriteBuffer, player1, player2, introText, chat);
@@ -1209,7 +1222,7 @@ abstract class Drawing {
         copyTmpCanvasToRealCanvasAtPos(canvas, textSpriteBuffer, 244, 51);
 
         if (topicImage != null) {
-            CanvasElement topicBuffer = getBufferCanvas(querySelector("#canvas_template"));
+            CanvasElement topicBuffer = getBufferCanvas(SimController.canvasTemplateWidth, SimController.canvasTemplateHeight);
             drawTopic(topicBuffer, topicImage);
             copyTmpCanvasToRealCanvasAtPos(canvas, topicBuffer, 0, 0);
         }
@@ -1370,7 +1383,7 @@ abstract class Drawing {
         if (checkSimMode() == true) {
             return;
         }
-        CanvasElement p1SpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement p1SpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         //drawBG(p1SpriteBuffer, "#ff9999", "#ff00ff");
         CanvasRenderingContext2D ctx = p1SpriteBuffer.getContext('2d');
         //  drawBG(p1SpriteBuffer, "#ff9999", "#ff00ff");
@@ -1432,7 +1445,7 @@ abstract class Drawing {
         if (checkSimMode() == true) {
             return;
         }
-        player = Player.makeRenderingSnapshot(player); //probably dont need to, but whatever
+        player = Player.makeRenderingSnapshot(player,true); //probably dont need to, but whatever
         CanvasRenderingContext2D ctx = canvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
         //don't forget to shrink baby
@@ -1451,15 +1464,17 @@ abstract class Drawing {
         if (ctx == null) {
             ctx = canvas.context2D;
         }
-        Player player = Player.makeRenderingSnapshot(inputplayer);
-        if (player.ghost || player.doomed) { //don't expect ghosts or doomed players to render more than a time or two, don't bother caching for now.
-            ////print("drawing ghost or doomed player from scratch: " + player);
-            drawSpriteFromScratch(canvas, player, ctx, false);
-        } else {
-            CanvasElement canvasDiv = querySelector("#${player.spriteCanvasID}");
-            //also take care of face scratches and mind control symbols.
-            copyTmpCanvasToRealCanvasAtPos(canvas, canvasDiv, 0, 0);
+
+        if(inputplayer.canvas == null) {
+            //;
+            inputplayer.initSpriteCanvas();
+
         }
+        Player player = Player.makeRenderingSnapshot(inputplayer,true);
+        //always cache
+        //also take care of face scratches and mind control symbols.
+        copyTmpCanvasToRealCanvasAtPos(canvas, player.canvas, 0, 0);
+
 
         if (!baby && player.influenceSymbol != null) { //dont make sprite for this, always on top, unlike scars
             //wasteOfMindSymbol(canvas, player);
@@ -1476,16 +1491,16 @@ abstract class Drawing {
 
     static Future<Null>  drawWhateverFuture(CanvasElement canvas, String imageString) async {
         ImageElement image = await Loader.getResource((imageString));
-        //print("got image $image");
+        //;
         canvas.context2D.drawImage(image, 0, 0);
     }
 
     static void drawSpriteFromScratch(CanvasElement canvas, Player player, [CanvasRenderingContext2D ctx = null, bool baby = false]) {
-        ////print("Drawing sprite from scratch " + player.isDreamSelf);
+       // ;
         if (checkSimMode() == true) {
             return;
         }
-        player = Player.makeRenderingSnapshot(player);
+        player = Player.makeRenderingSnapshot(player,true);
         //could be turnways or baby
         if (ctx == null) {
             ctx = canvas.context2D;
@@ -1508,7 +1523,7 @@ abstract class Drawing {
         }
 
         //spotlight
-        if(player.session.mutator.hasSpotLight(player)) drawWhatever(canvas, player.aspect.bigSymbolImgLocation);
+        if (player.session.mutator.hasSpotLight(player)) drawWhatever(canvas, player.aspect.bigSymbolImgLocation);
 
         if (!baby && player.isTroll && player.godTier) { //wings before sprite
             wings(canvas, player);
@@ -1604,6 +1619,11 @@ abstract class Drawing {
                 ghostSwap(canvas);
             }
         }
+
+        if (player.brainGhost){
+            ;
+            ghostSwap(canvas);
+         }
 
         if (!baby && player.aspect == Aspects.VOID) {
             voidSwap(canvas, 1 - player.getStat(Stats.POWER) / (2000 * Stats.POWER.coefficient)); //a void player at 2000 power is fully invisible.
@@ -1763,7 +1783,7 @@ abstract class Drawing {
         if (checkSimMode() == true) {
             return;
         }
-        CanvasElement p1SpriteBuffer = getBufferCanvas(querySelector("#sprite_template"));
+        CanvasElement p1SpriteBuffer = getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
         //drawBG(p1SpriteBuffer, "#ff9999", "#ff00ff");
         CanvasRenderingContext2D ctx = p1SpriteBuffer.getContext('2d');
         String imageString = "gears.png";
@@ -1956,7 +1976,7 @@ abstract class Drawing {
             ..shoe_light = player.aspect.palette.shirt_light
             ..shoe_dark = player.aspect.palette.shirt_dark;
 
-        Palette dream = player.moon.palette;
+        Palette dream = player.dreamPalette;
         Palette p = new Palette.combined(<Palette>[dream, shoes]);
 
         swapPalette(canvas, ReferenceColours.SPRITE_PALETTE, p);
@@ -2309,8 +2329,8 @@ abstract class Drawing {
     }
 
 
-    static CanvasElement getBufferCanvas(CanvasElement canvas) {
-        return new CanvasElement(width: canvas.width, height: canvas.height);
+    static CanvasElement getBufferCanvas(int width, int height) {
+        return new CanvasElement(width: width, height: height);
     }
 
 

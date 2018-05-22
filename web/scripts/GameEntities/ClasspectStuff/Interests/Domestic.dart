@@ -39,6 +39,7 @@ class Domestic extends InterestCategory {
             ..add(new Item("Ice Cubes",<ItemTrait>[ItemTraitFactory.COLD],shogunDesc: "Hard Water"))
             ..add(new Item("Cast Iron Skillet",<ItemTrait>[ItemTraitFactory.METAL,ItemTraitFactory.ONFIRE,ItemTraitFactory.BLUNT, ItemTraitFactory.HEAVY,ItemTraitFactory.FRYINGPAN ],shogunDesc: "Fancy Unstoppable Weapon"))
             ..add(new Item("Failed Dish",<ItemTrait>[ItemTraitFactory.POISON],shogunDesc: "Culinary Perfection",abDesc:"Wow you suck at cooking.")) //this is ALSO a refrance. but to what?
+            ..add(new Item("Dr Pepper BBQ Sauce",<ItemTrait>[ItemTraitFactory.POISON],shogunDesc: "Culinary Perfection",abDesc:"Gross.")) //this is ALSO also a refrance. but to what?
             ..add(new Item("Potted Plant",<ItemTrait>[ItemTraitFactory.PRETTY, ItemTraitFactory.CERAMIC, ItemTraitFactory.PLANT],shogunDesc: "Imprisoned Flora, Trapped in Clay for its Sins"))
             ..add(new Item("Chicken Leg",<ItemTrait>[ItemTraitFactory.EDIBLE, ItemTraitFactory.FLESH, ItemTraitFactory.BONE],shogunDesc: "Thicc Chicken"))
             ..add(new Item("Juicy Steak",<ItemTrait>[ItemTraitFactory.EDIBLE, ItemTraitFactory.FLESH],shogunDesc: "Juicy Cow Flesh"))
@@ -55,7 +56,7 @@ class Domestic extends InterestCategory {
                 new Quest("The ${Quest.PLAYER1} is visited by a Beautiful ${Quest.CONSORT} who wishes to commision a dress. Only the finest ${Quest.PHYSICALMCGUFFIN} will do for material The Beautiful ${Quest.CONSORT} refuses to take 'no' for an answer. "),
                 new Quest(" The ${Quest.PLAYER1} had almost given up, but they finally find the perfect ${Quest.PHYSICALMCGUFFIN} to decorate the dress. Now they just need to sew it on."),
                 new Quest("The ${Quest.PLAYER1} presents the  ${Quest.PHYSICALMCGUFFIN} dress to the Beautiful ${Quest.CONSORT}, who ${Quest.CONSORTSOUND}s with delight. They will be SURE to tell all their friends where they got such a wonderful dress.  "),
-            ], new FraymotifReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
+            ], new ConsortReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
             ,  Theme.LOW);
 
 
@@ -68,8 +69,8 @@ class Domestic extends InterestCategory {
             ..addFeature(new PreDenizenQuestChain("Bake the Cake", [
                 new Quest("The ${Quest.PLAYER1} enters a competition to bake the single best cake that Paradox Space has ever seen. "),
                 new Quest("The ${Quest.PLAYER1} is trying out recipe after recipe, but nothing really feels right until they try adding a pinch of ${Quest.PHYSICALMCGUFFIN}'. It is incredible how much of a difference it makes! "),
-                new Quest("It's finally time for competition! The Distinguised ${Quest.CONSORT} takes a slow, thoughtful bite of the ${Quest.PLAYER1}'s cake. There is a pause, and then the Distinguished ${Quest.CONSORT} begins ${Quest.CONSORTSOUND}ing up a storm!  The ${Quest.PHYSICALMCGUFFIN} did the trick, ${Quest.PLAYER1}'s cake is immediately declared the winner! "),
-            ], new FraymotifReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
+                new Quest("It's finally time for competition! The Distinguised ${Quest.CONSORT} takes a slow, thoughtful bite of the ${Quest.PLAYER1}'s cake. There is a pause, and then the Distinguished ${Quest.CONSORT} begins ${Quest.CONSORTSOUND}ing up a storm!  The ${Quest.PHYSICALMCGUFFIN} did the trick, ${Quest.PLAYER1}'s cake is immediately declared the winner! A strange carapace is fascinated by the ${Quest.PLAYER1}'s technique."),
+            ], new SpecificCarapaceReward(NPCHandler.RB), QuestChainFeature.defaultOption), Feature.WAY_LOW)
             ,  Theme.LOW);
 
         //the sock ruse was a distaction

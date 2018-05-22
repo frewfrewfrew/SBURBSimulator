@@ -3,9 +3,15 @@ import "../Lands/FeatureTypes/QuestChainFeature.dart";
 import "../Lands/Quest.dart";
 import "../Lands/Reward.dart";
 import "DeadSessionSummary.dart";
+import "dart:html";
+import "../Controllers/Misc/DeadSimController.dart";
 import "../Lands/FeatureTypes/EnemyFeature.dart";
+import 'dart:async';
+import 'dart:html';
 //only one player, player has no sprite, player has DeadLand, and session has 16 (or less) subLands.
 class DeadSession extends Session {
+
+
     @override
     bool canReckoning = true; // dead sessions can ALWAYS run out of time.
 
@@ -15,7 +21,7 @@ class DeadSession extends Session {
     Map<Theme, double> themes = new Map<Theme, double>();
     Map<Theme, double> chosenThemesForDeadSession =  new Map<Theme, double>();
     int numberLandsRemaining = 16; //can remove some in "the break".
-    List<QuestChainFeature> boringBullshit;
+    List<QuestChainFeature> boringBullshit = new List<QuestChainFeature>();
     QuestChainFeature victoryLap;
     Player metaPlayer;
     @override
@@ -45,10 +51,15 @@ class DeadSession extends Session {
         mutator.sessionHealth = 13000 * Stats.POWER.coefficient;
         sessionHealth = mutator.sessionHealth;
         //have a metaplayer BEFORE you make the bullshit quests.
-        mutator.metaHandler.initalizePlayers(this);
+        mutator.metaHandler.initalizePlayers(this, false);
         metaPlayer = rand.pickFrom(mutator.metaHandler.metaPlayers);
         metaPlayer.setStat(Stats.EXPERIENCE, 1300);
+        if(sessionID == 4037) {
+            Random rand = new Random(); // true random. want to have both shogun endings available
+            oddsOfSuccess += rand.nextDouble(0.4); //fu almost can't lose. but if he does ;) ;) ;)
+        }
         makeThemes();
+        getPlayersReady();
         timeTillReckoning = minTimeTillReckoning; //pretty long compared to a normal session, but not 16 times longer. what will you do?
     }
 
@@ -62,6 +73,9 @@ class DeadSession extends Session {
     //http://www.mspaintadventures.com/?s=6&p=007682  thanks to nobody for finding this page for me to be inspired by
     //Also, since I KNOW this will be called post initialization, I can reference the meta player directly.
     void makeBoringBullshit() {
+        WeightedList<Item> duttonItems = new WeightedList<Item>();
+        duttonItems.add((new Item("Dream Bubbles Book",<ItemTrait>[ItemTraitFactory.PAPER, ItemTraitFactory.CLASSY, ItemTraitFactory.BOOK, ItemTraitFactory.DUTTON])));
+
         boringBullshit = new List<QuestChainFeature>()
         ..add(new PreDenizenQuestChain("Find Bullshit Keys", <Quest>[
             new Quest("The ${Quest.PLAYER1} discovers a mysterious console with several key holes. That asshole, ${metaPlayer.chatHandle} taunts the ${Quest.PLAYER1} with how they can't progress until they finish this boring, tedious, STUPID quest."),
@@ -72,6 +86,17 @@ class DeadSession extends Session {
             new Quest("The ${Quest.PLAYER1} finds another key. Wait. No, it turns out it's somehow just a SCULPTURE of a key.  It doesn't fit in the godamned console. "),
             new Quest("Wait.  What? Really!  It's the final bullshit key! Holy fuck!  The ${Quest.PLAYER1} activates the console. There is an ominous rumbling, and several mini planets are unlocked.  ${metaPlayer.chatHandle} enjoys a hearty round of gigglesnort at the fact that the reward is to do MORE pointless bullshit quests.")
         ], new Reward(), QuestChainFeature.defaultOption))
+        ..add(new PreDenizenQuestChain("Worship Dutton", <Quest>[
+            new Quest("The ${Quest.PLAYER1} discovers a mysterious console with a keyboard. That asshole, ${metaPlayer.chatHandle} taunts the ${Quest.PLAYER1} with how they can't progress until they can pass the world's most detailed TRIVIA QUIZ on none other than actor and prophect, Charles Dutton."),
+            new Quest("The ${Quest.PLAYER1} learns that Charles Dutton is the First Son of Skaia. "),
+            new Quest("Huh apparently Charles Dutton is somebody named 'Andrew Hussie''s father? The ${Quest.PLAYER1} memorizes this."),
+            new Quest("The ${Quest.PLAYER1} learns that Charles Dutton played a role in 'Aliens 3'. "),
+            new Quest("The ${Quest.PLAYER1} learns that Charles Dutton once killed a man. "),
+            new Quest("Charles Dutton is the world's foremost Prophet. The ${Quest.PLAYER1} wishes they had a copy of their famous 'Dream Bubbles' book. "),
+            new Quest("'Oh, that this too too solid flesh would melt, thaw and resolve itself into a dew!'. The ${Quest.PLAYER1} is deeply moved by Charles Dutton's words. "),
+            new Quest("The ${Quest.PLAYER1} learns that Charles Dutton is associated with the meta player, noBody? "),
+            new Quest("The ${Quest.PLAYER1} has nothing left to learn. They activates the console, and easily pass the Trivia Challenge. There is an ominous rumbling, and several mini planets are unlocked.  ${metaPlayer.chatHandle} enjoys a hearty round of gigglesnort at the fact that the reward is to do MORE semi-pointless quests.")
+        ], new  ItemReward(duttonItems), QuestChainFeature.defaultOption))
         ..add(new PreDenizenQuestChain("Count Bullshit Bugs", <Quest>[
             new Quest("The ${Quest.PLAYER1} discovers a mysterious console with a keypad. That asshole, ${metaPlayer.chatHandle} taunts the ${Quest.PLAYER1} with how they can't progress until they finish this boring, tedious, STUPID quest."),
             new Quest("The ${Quest.PLAYER1} finds another bug."),
@@ -96,6 +121,125 @@ class DeadSession extends Session {
             new Quest("The ${Quest.PLAYER1} just needs to find ${Quest.DENIZEN}. How much bullshit will this shitty game manage to make this into? "),
             new DenizenFightQuest("Huh. You kind of thought it was going to be a federal fucking issue, but it turns out ${Quest.DENIZEN} was in the giant dungeon with their face on it. Who knew?", "Welp. This is it. A completed dead session. How the fuck did this happen?", "Oh wow. How the fuck did the ${Quest.PLAYER1} manage to get owned so hard after coming so far?")
         ], new ImmortalityReward(),  QuestChainFeature.defaultOption);
+    }
+
+
+    @override
+    Future<Null> doComboSession(Session tmpcurSessionGlobalVar) async {
+        logger.info("Doing a Dead Combo");
+        int id = this.session_id;
+
+        if(tmpcurSessionGlobalVar == null) tmpcurSessionGlobalVar = this.initializeCombinedSession();  //if space field this ALWAYS returns something. this should only be called on null with space field
+        //maybe ther ARE no corpses...but they are sure as shit bringing the dead dream selves.
+        List<Player> living = findLiving(tmpcurSessionGlobalVar.aliensClonedOnArrival);
+        //window.alert("doing combo session in dead, cloned aliens: ${living.length}");
+
+        if(living.isEmpty) {
+            appendHtml(SimController.instance.storyElement, "<br><Br>You feel a nauseating wave of space go over you. What happened? Wait. Fuck. That's right. The Space Player made it so that they could enter their own child Session. But. Fuck. Everybody is dead. This...god. Maybe...maybe the other Players can revive them? ");
+        }else {
+            appendHtml(SimController.instance.storyElement, "<br><Br> Entering: session <a href = 'index2.html?seed=${tmpcurSessionGlobalVar.session_id}'>${tmpcurSessionGlobalVar.session_id}</a>");
+        }
+        checkSGRUB();
+        if(this.mutator.spaceField) {
+            window.scrollTo(0, 0);
+            querySelector("#charSheets").setInnerHtml("");
+            SimController.instance.storyElement.setInnerHtml("You feel a nauseating wave of space go over you. What happened? Huh. Is that.... a new session? How did the Players get here? Are they joining it? Will...it...even FIT having ${this.players.length} fucking players inside it? ");
+        }
+        if(id == 4037) {
+            window.alert("Who is Shogun???");
+            tmpcurSessionGlobalVar.session_id = 13;
+            //okay well this is an entire new priority now that i notice who is dying. i'm so sorry sb.
+/*holy fuck nothing i do keeps us from dying. oh well.
+        for(Player p in this.players) {
+          p.addStat(Stats.HEALTH, 100);
+          p.makeAlive(); //why is this necessary, shogun stop killing us before you even get in.
+        }*/
+        }
+        if(id ==612) this.session_id = 413;
+        checkEasterEgg(tmpcurSessionGlobalVar);
+        await tmpcurSessionGlobalVar.startSession();
+    }
+
+
+    @override
+    Future<Session> startSession([bool dontReinit]) async {
+        globalInit(); // initialise classes and aspects if necessary
+        SimController.instance.currentSessionForErrors = this;
+        players = <Player>[players.first]; //hardcoded to be one big
+        // //
+        changeCanonState(this, getParameterByName("canonState",null));
+        //red miles are way too common and also dead sessions are special
+        prospit.destroyRing();
+        derse.destroyRing();
+        if (doNotRender == true) {
+            intro();
+        } else {
+            //
+            load(this,players, getGuardiansForPlayers(players), "");
+        }
+        return completer.future;
+
+    }
+
+    @override
+    void easterEggCallBack() {
+        DeadSession ds = (this as DeadSession);
+        //initializePlayers(this.players, this); //will take care of overriding players if need be.
+        //has to happen here cuz initializePlayers can wipe out relationships.
+        ds.players[0].deriveLand = false;
+        //ds.players[0].relationships.add(new Relationship(ds.players[0], -999, ds.metaPlayer)); //if you need to talk to anyone, talk to metaplayer.
+        //ds.metaPlayer.relationships.add(new Relationship(ds.metaPlayer, -999, ds.players[0])); //if you need to talk to anyone, talk to metaplayer.
+
+        checkSGRUB();
+        if (doNotRender == true) {
+            this.intro();
+        } else {
+            load(this, this.players, getGuardiansForPlayers(this.players), "");
+        }
+    }
+
+    @override
+    Future<Null> reckoning() async{
+        ////
+        Scene s = new DeadReckoning(this);
+        s.trigger(this.players);
+        s.renderContent(this.newScene(s.runtimeType.toString(),));
+        simulationComplete("Dead Reckoning.");
+        renderAfterlifeURL(this);
+    }
+
+    @override
+    Future<Null> processCombinedSession() async{
+        logger.info("processing a Dead Combo");
+
+        //guaranteed to make one since it's a dead session
+        this.players[0].relationships.clear(); //forgot about that annoying voice in your head.
+        Session tmpcurSessionGlobalVar = this.initializeCombinedSession();
+        SimController.instance = null;
+        new StoryController();
+        await doComboSession(tmpcurSessionGlobalVar);
+
+    }
+
+
+    @override
+    Future<Null> callNextIntro(int player_index) async{
+
+        if (player_index >= this.players.length) {
+            await tick(); //NOW start ticking
+            return;
+        }
+        DeadIntro s = new DeadIntro(this);
+        Player p = this.players[player_index];
+        //var playersInMedium = this.players.slice(0, player_index+1); //anybody past me isn't in the medium, yet.
+        List<Player> playersInMedium = this.players.sublist(0, player_index + 1);
+        s.trigger(<Player>[p]);
+        s.renderContent(this.newScene(s.runtimeType.toString())); //new scenes take care of displaying on their own.
+        this.processScenes(playersInMedium);
+        //player_index += 1;
+        //new Timer(new Duration(milliseconds: 10), () => callNextIntro(player_index)); //sweet sweet async
+        SimController.instance.gatherStats(this);
+        await tick();
     }
 
     void makeThemes() {
@@ -149,6 +293,28 @@ class DeadSession extends Session {
                 new FailableQuest("The ${Quest.PLAYER1} gets the final strike!!! They are officially declared the bowling champion! Congratulations! Now, all they need to do is make their way to the final Boss.  The ${Quest.PLAYER1} barely even cares what sorts of annoying things are in the way, they are so close they can TASTE victory.", "The ${Quest.PLAYER1} gets a gutter ball. A perfect game is no longer possible.", oddsOfSuccess)
             ], new Reward(), QuestChainFeature.defaultOption), Feature.WAY_HIGH)
             ,  Theme.SUPERHIGH);
+
+        addTheme(new Theme(<String>["Dutton", "Charles","Fathers","Prophets","Dew"])
+            ..addFeature(FeatureFactory.DUTTLECONSORT, Feature.HIGH)
+            ..addFeature(FeatureFactory.CONTEMPLATATIVEFEELING, Feature.HIGH)
+            ..addFeature(FeatureFactory.RUSTLINGSOUND, Feature.HIGH)
+            ..addFeature(FeatureFactory.CALMFEELING, Feature.MEDIUM)
+            ..addFeature(rand.pickFrom(boringBullshit), Feature.WAY_HIGH)
+            ..addFeature(victoryLap, Feature.WAY_HIGH)
+            ..addFeature(new DenizenQuestChain("Shun the False Prophets", [
+                new Quest("The ${Quest.PLAYER1} listens with increasing confusion as it is explained to them that each planet has a hidden Correct Dutton Statue that must be found among all the FALSE PROPHETS. Can ${Quest.PLAYER1} Spot the Difference? Once found, they must then positioned such that all Statues's lasers in the session are arranged to make the Face of Dutton. Should any laser be misaligned, all Dutton Statues will explode."),
+                new FailableQuest("${metaPlayer.chatHandle} breaks the ${Quest.PLAYER1} concentration just to ask them about B List Celebrities. ", "The ${Quest.PLAYER1} is careless and misaligns a Dutton Statue. There are explosions.", oddsOfSuccess),
+                new FailableQuest("The ${Quest.PLAYER1} carefully scrutinizes yet another Dutton Statue. Yes. That is the proper shape of the brow. It is the Correct Dutton Statue.", "The ${Quest.PLAYER1} is careless and misaligns a Dutton Statue. There are explosions.", oddsOfSuccess),
+                new FailableQuest("That nose is unmistakable. The ${Quest.PLAYER1} has found another Correct Dutton Statue. ", "The ${Quest.PLAYER1} is careless and misaligns a Dutton Statue. There are explosions.", oddsOfSuccess),
+                new FailableQuest("The ${Quest.PLAYER1} has begun to hallucinate that maybe Charles Dutton is their own Father. ", "The ${Quest.PLAYER1} is careless and misaligns a Dutton Statue. There are explosions.", oddsOfSuccess),
+                new FailableQuest("The ${Quest.PLAYER1} ALMOST selects a FALSE PROPHET, but at the last moment notices the lack of PATERNAL TWINKLE in the statue's eyes. ", "The ${Quest.PLAYER1} is careless and misaligns a Dutton Statue. There are explosions.", oddsOfSuccess),
+                new FailableQuest("The ${Quest.PLAYER1} dreams often of Charles Dutton. It is increasingly easy to find him among the FALSE PROPHETs.", "The ${Quest.PLAYER1} is careless and misaligns a Dutton Statue. There are explosions. They weep at the loss of all the Duttons.", oddsOfSuccess),
+                new FailableQuest("The ${Quest.PLAYER1} curses their lack of true resemblence to Charles Dutton. Every feature is even further from the first Son of Skaia than the FALSE PROPHETS are.  ", "The ${Quest.PLAYER1} is careless and misaligns a Dutton Statue. There are explosions. They weep at the loss of all the Duttons.", oddsOfSuccess),
+                new FailableQuest("The ${Quest.PLAYER1} alchemizes a DUTTON MASK to wear in private. They must hide their hideous visage. ", "The ${Quest.PLAYER1} is careless and misaligns a Dutton Statue. There are explosions. They weep at the loss of all the Duttons.", oddsOfSuccess),
+                new FailableQuest("With a heavy sigh, the ${Quest.PLAYER1} aligns the Correct Dutton statue on this planet. They know it won't be long yet, and wonder if they will be able to handle having no more PATERNAL PRESENCE when they leave. ", "The ${Quest.PLAYER1} is careless and misaligns a Dutton Statue. There are explosions. They weep at the loss of all the Duttons.", oddsOfSuccess),
+                new FailableQuest("The ${Quest.PLAYER1} aligns the final Correct Dutton Statue. The Medium lights up with a laser light show of Dutton and Dutton's acomplishments. A water mark of Dutton's face appears in the ${Quest.PLAYER1}'s vision, never to leave. They weep tears of joy to know they will never be without their Father again. ", "The ${Quest.PLAYER1} is careless and misaligns a Dutton Statue at the last minute. There are explosions. They weep at the loss of all the Duttons.", oddsOfSuccess),
+            ], new Reward(), QuestChainFeature.defaultOption), Feature.WAY_HIGH)
+            , Theme.SUPERHIGH);
 
         addTheme(new Theme(<String>["Minesweeper", "Minefields"])
             ..addFeature(FeatureFactory.ROBOTCONSORT, Feature.HIGH)
@@ -215,15 +381,15 @@ class DeadSession extends Session {
 
     @override
     void makePlayers() {
-        this.players = new List<Player>(1); //it's a list so everything still works, but limited to one player.
+        this.players = new List<Player>(); //it's a list so everything still works, but limited to one player.
         resetAvailableClasspects();
         int numPlayers = this.rand.nextIntRange(2, 12); //rand.nextIntRange(2,12);
         double special = rand.nextDouble();
-        players[0] = (randomPlayer(this));
+        players.add(randomPlayer(this));
 
         //random chance of Lord/Muse for natural two player sessions, even if they become dead
         if(numPlayers <= 2) {
-            print("less than 2 players");
+            ;
             if(special > .6) {
                 players[0].class_name = SBURBClassManager.LORD;
             }else if(special < .3) {
@@ -232,8 +398,29 @@ class DeadSession extends Session {
         }
 
         players[0].deriveLand = false;
-        metaPlayer.renderSelf();
+       // metaPlayer.renderSelf("metaPlayerMakePlayers");
         players[0].leader = true; //you are the leader.
+    }
+
+    @override
+    void reinit(String source) {
+        ;
+        super.reinit(source);
+        themes = new Map<Theme, double>();
+        chosenThemesForDeadSession =  new Map<Theme, double>();
+        numberLandsRemaining = 16; //can remove some in "the break".
+        boringBullshit.clear();
+        mutator.sessionHealth = 13000 * Stats.POWER.coefficient;
+        sessionHealth = mutator.sessionHealth;
+        //have a metaplayer BEFORE you make the bullshit quests.
+        mutator.metaHandler.initalizePlayers(this,true);
+        metaPlayer = rand.pickFrom(mutator.metaHandler.metaPlayers);
+        metaPlayer.setStat(Stats.EXPERIENCE, 1300);
+        makeThemes();
+        timeTillReckoning = minTimeTillReckoning; //pretty long compared to a normal session, but not 16 times longer. what will you do?
+        failed = false;
+        //this.rand.setSeed(131313131313);
+
     }
 
     void makeDeadLand() {
@@ -248,8 +435,50 @@ class DeadSession extends Session {
         chosenThemesForDeadSession[interest1Theme] = player.interest1.category.themes[interest1Theme];
         chosenThemesForDeadSession[interest2Theme] = player.interest2.category.themes[interest2Theme];
         chosenThemesForDeadSession[deadTheme] = themes[deadTheme];
-        print("making a dead land. with themes: ${chosenThemesForDeadSession}");
+        ;
         players[0].land = new Land.fromWeightedThemes(chosenThemesForDeadSession, this, players[0].aspect,players[0].class_name);
+
+        //check to see if it's dutton related.
+        for(QuestChainFeature q in players[0].land.firstQuests) {
+            if(q.name.contains("Dutton")) {
+                logger.info("AB: It's a dutton quest in a dead session? Better go get noBody...");
+                metaPlayer = mutator.metaHandler.somebody;
+                metaPlayer.setStat(Stats.EXPERIENCE, 1300);
+            }
+        }
+
+        for(QuestChainFeature q in players[0].land.secondQuests) {
+            if(q.name.contains("Dutton")) {
+                logger.info("AB: It's a dutton quest in a dead session? Better go get noBody...");
+                metaPlayer = mutator.metaHandler.somebody;
+                metaPlayer.setStat(Stats.EXPERIENCE, 1300);
+            }
+        }
+
+        for(QuestChainFeature q in players[0].land.thirdQuests) {
+            if(q.name.contains("Dutton")) {
+                logger.info("AB: It's a dutton quest in a dead session? Better go get noBody...");
+                metaPlayer = mutator.metaHandler.somebody;
+                metaPlayer.setStat(Stats.EXPERIENCE, 1300);
+            }
+        }
+
+        if(players[0].chatHandle == mutator.metaHandler.feudalUltimatum.chatHandle) {
+            logger.info("AB: Oh hey JR, there's that asshole you like trolling.");
+            metaPlayer = mutator.metaHandler.jadedResearcher;
+            oddsOfSuccess = 113.99999999999; //he almost CAN'T lose
+
+            metaPlayer.setStat(Stats.EXPERIENCE, 1300);player.quirk.capitalization = Quirk.NOCAPS;
+            //dunno why shoguns' quirk is weir d here. whtever.
+            players[0].quirk.punctuation = Quirk.PERFPUNC;
+            players[0].quirk.lettersToReplace = [];
+            players[0].quirk.lettersToReplaceIgnoreCase = [];
+        }
+
+        players[0].relationships.add(new Relationship(players[0], -999, metaPlayer)); //if you need to talk to anyone, talk to metaplayer.
+        metaPlayer.relationships.add(new Relationship(metaPlayer, -999, players[0])); //if you need to talk to anyone, talk to metaplayer.
+
+
     }
 
     @override
@@ -270,25 +499,29 @@ class DeadSession extends Session {
     //unlike regular sessions there is no way to fail this.
     @override
     Session initializeCombinedSession() {
+        logger.info("initing a Dead Combo");
+
         this.aliensClonedOnArrival = <Player>[]; //PROBABLY want to do this.
-        List<Player> living = findLivingPlayers(this.players);
-        living.add((curSessionGlobalVar as DeadSession).metaPlayer);
+        List<Player> living = findLiving(this.players);
+        living.add((this as DeadSession).metaPlayer);
         //nobody is the leader anymore.
         Session newSession = new Session(this.rand.nextInt()); //Math.seed);  //this is a real session that could have gone on without these new players.
         newSession
             ..currentSceneNum = this.currentSceneNum
             ..afterLife = this.afterLife //afterlife carries over.
             ..stats.dreamBubbleAfterlife = this.stats.dreamBubbleAfterlife //this, too
-            ..reinit()
+            ..reinit("Dead Combo")
             ..makePlayers()
             ..randomizeEntryOrder()
             ..makeGuardians();
 
-        addAliensToSession(newSession, this.players); //used to only bring players, but that broke shipping. shipping is clearly paramount to Skaia, because everything fucking crashes if shipping is compromised.
+        newSession.addAliensToSession(this.players); //used to only bring players, but that broke shipping. shipping is clearly paramount to Skaia, because everything fucking crashes if shipping is compromised.
 
         this.stats.hadCombinedSession = true;
-        newSession.parentSession = this;
-        Scene.createScenesForSession(newSession);
+        this.childSession = childSession;
+        //newSession.parentSession = this;
+        Scene.createScenesForPlayer(newSession, players.first);
+        //logger.info("initializing  a session with players ${newSession.players}");
         return newSession;
     }
 

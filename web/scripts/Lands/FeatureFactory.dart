@@ -16,6 +16,7 @@ class FeatureFactory {
     //TODO also have skeletal versions of some consorts. not a flag, say Salamander, cuz is different and doesn't preclude living salamanders
     static ConsortFeature SALAMANDERCONSORT;
     static ConsortFeature CROCODILECONSORT;
+    static ConsortFeature DUTTLECONSORT;
     static ConsortFeature IGUANACONSORT;
     static ConsortFeature TURTLECONSORT;
     static ConsortFeature CHAMELEONCONSORT;
@@ -34,6 +35,8 @@ class FeatureFactory {
     static ConsortFeature ROBOTCONSORT;
     static CarapaceFeature PROSPITIANCARAPACE;
     static CarapaceFeature DERSECARAPACE;
+    static HorrorTerrorFeature HORRORTERROR;
+
 
     static Iterable<ConsortFeature> RANDOM_CONSORTS;
 
@@ -115,6 +118,7 @@ class FeatureFactory {
 
 
     static void initializeConsorts() {
+        DUTTLECONSORT = new ConsortFeature("Duttle", "Dut");
         SALAMANDERCONSORT = new ConsortFeature("Salamander", "GLUB");
         CROCODILECONSORT = new ConsortFeature("Crocodile", "NAK");
         IGUANACONSORT = new ConsortFeature("Iguana", "thip");
@@ -135,7 +139,7 @@ class FeatureFactory {
         DRAGONCONSORT = new ConsortFeature("Dragon", "roar");
         PROSPITIANCARAPACE = new CarapaceFeature("Prospitian", "murmur");
         DERSECARAPACE = new CarapaceFeature("Dersite", "mutter");
-
+        HORRORTERROR = new HorrorTerrorFeature("Horror Terror", "a;lkjdf");
         RANDOM_CONSORTS = <ConsortFeature>[SNAKECONSORT, ALLIGATORCONSORT, NEWTCONSORT, SALAMANDERCONSORT, IGUANACONSORT, CROCODILECONSORT, TURTLECONSORT, CHAMELEONCONSORT, AXOLOTLCONSORT, LIZARDCONSORT];
     }
 

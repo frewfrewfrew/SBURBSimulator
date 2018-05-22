@@ -6,15 +6,17 @@ import '../SessionFinder/AuthorBot.dart';
 
 Random rand;
 MysteryController self; //want to access myself as more than just a sim controller occasionally
-void main() {
+Future<Null> main() async {
   doNotRender = true;
   rand = new Random();
+  await globalInit();
+
   querySelector("#pw_hint_button").onClick.listen((e) => self.showHint());
   querySelector("#pwButton").onClick.listen((e) => self.checkPassword());
   window.onError.listen((Event event){
     ErrorEvent e = event as ErrorEvent;
     //String msg, String url, lineNo, columnNo, error
-    printCorruptionMessage(e);//(e.message, e.path.toString(), e.lineno.toString(), e.colno.toString(), e.toString());
+    printCorruptionMessage(SimController.instance.currentSessionForErrors,e);//(e.message, e.path.toString(), e.lineno.toString(), e.colno.toString(), e.toString());
     return;
   });
   new MysteryController();
@@ -33,7 +35,7 @@ class MysteryController extends AuthorBot {
 
   @override
   void summarizeSession(Session session) {
-      checkPasswordAgainstQuip(curSessionGlobalVar.generateSummary());
+      checkPasswordAgainstQuip(session.generateSummary());
   }
 
   @override
@@ -92,8 +94,8 @@ class MysteryController extends AuthorBot {
 
 
 
-  void checkPassword(){
-    ////print("click");
+  Future<Null> checkPassword() async{
+    ////;
     numSimulationsDone = 0; //but don't reset stats
     sessionSummariesDisplayed = [];
 
@@ -106,7 +108,9 @@ class MysteryController extends AuthorBot {
     }else{
       window.alert("Hrrrm...let me think about it.");
       initial_seed = tmp;
-      startSession();
+      //don't need to keep a ref to it
+      Session session = new Session(SimController.instance.initial_seed);
+      startSessionThenSummarize(session);
     }
   }
 

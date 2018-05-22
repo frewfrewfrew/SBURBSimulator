@@ -8,6 +8,18 @@ import "../../../Lands/FeatureTypes/QuestChainFeature.dart";
 import "../../../Lands/Reward.dart";
 import "../../../Lands/Quest.dart";
 class Scribe extends SBURBClass {
+
+    @override
+    String sauceTitle = "Archwright";
+
+    //what sort of quests rewards do I get?
+    @override
+    double itemWeight = 1.01;
+    @override
+    double fraymotifWeight = 0.01;
+    @override
+    double companionWeight = 0.01;
+
     Scribe() : super("Scribe", 15, false);
     @override
     List<String> levels = ["MIDNIGHT BURNER", "WRITER WATCHER", "DIARY DEAREST"];
@@ -81,7 +93,7 @@ class Scribe extends SBURBClass {
                 new Quest("Now that the ${Quest.DENIZEN} has been taken care of, the ${Quest.PLAYER1} discovers a large library of ${Quest.CONSORT} documents and books in its lair. They were not taken care of to say the least, and are badly in need of repair."),
                 new Quest("The ${Quest.PLAYER1} sits in a small room, repairing bindings, glueing pages, and copying and replacing pages outright where necessary.  The work is strangely soothing."),
                 new Quest(" The final book has been restored.  The local ${Quest.CONSORT}s dedicate a library in the ${Quest.PLAYER1}'s honor and cherish their legacy now returned to them.")
-            ], new FraymotifReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
+            ], new RandomReward(), QuestChainFeature.defaultOption), Feature.WAY_LOW)
             ,  Theme.MEDIUM);
     }
 

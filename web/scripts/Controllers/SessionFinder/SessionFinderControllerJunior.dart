@@ -3,17 +3,19 @@ import '../../navbar.dart';
 import 'dart:html';
 import 'dart:typed_data';
 import 'dart:collection';
+import "dart:async";
+import "../../SessionEngine/SessionSummaryLib.dart";
 
 //replaces the poorly named scenario_controller2.js
 SessionFinderControllerJunior self; //want to access myself as more than just a sim controller occasionally
 
-main() {
+void main() {
   doNotRender = true;
   loadNavbar();
   window.onError.listen((Event event){
     ErrorEvent e = event as ErrorEvent;
     //String msg, String url, lineNo, columnNo, error
-    printCorruptionMessage(e);//(e.message, e.path.toString(), e.lineno.toString(), e.colno.toString(), e.toString());
+    printCorruptionMessage(SimController.instance.currentSessionForErrors,e);//(e.message, e.path.toString(), e.lineno.toString(), e.colno.toString(), e.toString());
     return;
   });
   new SessionFinderControllerJunior();
@@ -26,7 +28,16 @@ main() {
     self.initial_seed = tmp;
   }
   self.formInit();
+  if(SimController.shogun) doShogun();
+
 }
+
+
+void doShogun() {
+  (querySelector("#avatar") as ImageElement).src = "images/ABJ_burn.png";
+
+}
+
 
 void checkSessionsJunior() {
   self.checkSessions();
@@ -54,7 +65,7 @@ class SessionFinderControllerJunior extends SimController {
 //it will be secret code
 //and definitely not terrifying at all
     void filterSessionsJunior(){
-    //print("going to filter");
+    //;
       int num_players =int.parse((querySelector("#num_players")as InputElement).value);
       List<dynamic> tmp = [];
       sessionSummariesDisplayed = [];
@@ -85,6 +96,7 @@ class SessionFinderControllerJunior extends SimController {
   }
 
   void checkSessions() {
+    print("abj is checking a sessions");
     numSimulationsDone = 0; //but don't reset stats
     sessionSummariesDisplayed = [];
     for(num i = 0; i<allSessionsSummaries.length; i++){
@@ -93,7 +105,42 @@ class SessionFinderControllerJunior extends SimController {
     setHtml(SimController.instance.storyElement, "");
     numSimulationsToDo = int.parse((querySelector("#num_sessions")as InputElement).value);
     (querySelector("#button")as ButtonElement).disabled =true;
-    startSession(); //im junior so deal with it
+    print("ab is going to make a session");
+    Session session = new Session(SimController.instance.initial_seed);
+    checkEasterEgg(session);
+    doSession(session);
+    //session.startSession();
+  }
+
+  void doSession(Session session) {
+    //initializePlayers(session.players, session);  //need to redo it here because all other versions are in case customizations
+    //aaaaand. done.
+    sessionsSimulated.add(session.session_id);
+    SessionSummary sum = session.generateSummary();
+    SessionSummaryJunior sumJR = sum.getSessionSummaryJunior();
+    allSessionsSummaries.add(sumJR);
+    sessionSummariesDisplayed.add(sumJR);
+    var str = sumJR.generateHTML();
+    debug("<br><hr><font color = 'orange'> ABJ: " + getQuipAboutSession() + "</font><Br>" );
+    debug(str);
+    printStatsJunior();
+    numSimulationsDone ++;
+    if(numSimulationsDone >= numSimulationsToDo){
+      (querySelector("#button")as ButtonElement).disabled =false;
+    }else{
+      initial_seed = getRandomSeed();
+      session = new Session(initial_seed);
+      checkEasterEgg(session);
+      doSession(session);
+      //session.startSession();
+    }
+  }
+
+
+
+  @override
+  void easterEggCallBackRestart(Session session) {
+    throw "ABJ does not actually simulate shit.";
   }
 
   @override
@@ -111,27 +158,7 @@ class SessionFinderControllerJunior extends SimController {
     throw "ABJ does not actually simulate shit.";
   }
 
-  @override
-  void easterEggCallBack() {
-    initializePlayers(curSessionGlobalVar.players, curSessionGlobalVar);  //need to redo it here because all other versions are in case customizations
-    //aaaaand. done.
-    sessionsSimulated.add(curSessionGlobalVar.session_id);
-    SessionSummary sum = curSessionGlobalVar.generateSummary();
-    SessionSummaryJunior sumJR = sum.getSessionSummaryJunior();
-    allSessionsSummaries.add(sumJR);
-    sessionSummariesDisplayed.add(sumJR);
-    var str = sumJR.generateHTML();
-    debug("<br><hr><font color = 'orange'> ABJ: " + getQuipAboutSession() + "</font><Br>" );
-    debug(str);
-    printStatsJunior();
-    numSimulationsDone ++;
-    if(numSimulationsDone >= numSimulationsToDo){
-      (querySelector("#button")as ButtonElement).disabled =false;
-    }else{
-      initial_seed = getRandomSeed();
-      startSession();
-    }
-  }
+
 
   void printStatsJunior(){
     var mms = MultiSessionSummaryJunior.collateMultipleSessionSummariesJunior(sessionSummariesDisplayed);
@@ -162,54 +189,19 @@ class SessionFinderControllerJunior extends SimController {
   }
 
 
-  @override
-  void easterEggCallBackRestart() {
-    throw "ABJ does not actually simulate shit.";
-  }
-
-  @override
-  void intro() {
-    throw "ABJ does not actually simulate shit.";
-  }
-
-  @override
-  void processCombinedSession() {
-    throw "ABJ does not actually simulate shit.";
-  }
-
-  @override
-  void reckoning() {
-    throw "ABJ does not actually simulate shit.";
-  }
-
-  @override
-  void reckoningTick([num time]) {
-    throw "ABJ does not actually simulate shit.";
-  }
-
-  @override
-  void recoverFromCorruption() {
-    throw "ABJ does not actually simulate shit.";
-  }
 
 
   @override
   void renderScratchButton(Session session) {
-    throw "ABJ does not actually simulate shit.";
+    throw "ABJ does not actually simulate shit render scratch.";
   }
 
-  @override
-  void restartSession() {
-    throw "ABJ does not actually simulate shit.";
-  }
+
 
   @override
   void shareableURL() {
-    throw "ABJ does not actually simulate shit.";
+    throw "ABJ does not actually simulate shit. shareable url";
   }
 
-  @override
-  void tick([num time]) {
-    throw "ABJ does not actually simulate shit.";
-  }
+
 }

@@ -1,17 +1,15 @@
 ///get rid of session having way too many fields. Everything a session is keeping track of for summaries.
 class SessionStats {
     int initialGameEntityId = 0;
+
     bool hasClubs = false;
     bool hasDiamonds = false;
     bool opossumVictory = false;
     bool hasBreakups = false; //sessions aren't in charge of denizens anymore, they are for players and set when they get in the medium
     bool badBreakDeath = false;
-    bool jackGotWeapon = false;
-    bool jackRampage = false;
-    bool jackScheme = false;
     bool luckyGodTier = false;
     bool choseGodTier = false;
-    bool plannedToExileJack = false;
+    bool mailQuest = false;
     bool hasHearts = false;
     bool hasSpades = false;
     bool rocksFell = false;
@@ -21,21 +19,22 @@ class SessionStats {
     bool crashedFromPlayerActions = false;
     bool sickFires = false;
     bool dreamBubbleAfterlife = false;
+    bool hasGhostEvents = false;
+    bool hadGhostRevival = false;
+    bool hadGhostArmy = false;
+    bool hadGhostPowerUp = false;
     bool heroicDeath = false;
     bool won = false;
     bool justDeath = false;
-    bool mayorEnding = false;
     bool gnosisEnding = false;
     bool loveEnding = false;
     bool hateEnding = false;
     bool monoTheismEnding = false;
-    bool waywardVagabondEnding = false;
     bool murdersHappened = false;
     bool queenRejectRing = false;
     bool goodLuckEvent = false;
     bool badLuckEvent = false;
     bool hasFreeWillEvents = false;
-    bool hasGhostEvents = false;
     bool hasTier1Events = false;
     bool hasTier2Events = false;
     bool hasTier3Events = false;
@@ -48,9 +47,19 @@ class SessionStats {
     bool godTier = false;
     bool grimDarkPlayers = false;
     bool questBed = false;
+    bool bigBadActive = false;
     bool sacrificialSlab = false;
     bool hadCombinedSession = false;
     bool yellowYard = false;
     bool crashedFromCustomShit = false;
     bool cataclysmCrash = false;
+    bool ringWraithCrash = false;
+    bool redMilesActivated = false;
+    bool moonDestroyed = false;
+    bool planetDestroyed = false;
+    bool crownedCarapace = false;
+    bool timeoutReckoning = false; //did it happen via two scepters, or did it hit the timeout?
+    bool nonKingReckoning = false;
+    bool mailedCrownAbdication = false; //did someone with a crown just fucking mail it.
+    bool brokenForge = false;
 }

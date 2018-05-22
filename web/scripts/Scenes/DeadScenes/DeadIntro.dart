@@ -5,17 +5,20 @@ import "../../SBURBSim.dart";
 ///completely different intro from a regular session, none of that boring "dialogue" that regular sessions start with.
 ///
 class DeadIntro extends Scene {
-
+    Player player;
     DeadIntro(Session session) : super(session);
 
     @override
     void renderContent(Element div) {
-        Player player = session.players[0];
+        player = session.players[0];
+        player.active = true; //booyeah, that's probably fixed dead sessions never starting right
         CanvasElement canvasDiv = new CanvasElement(width: 800, height: 1000);
         player.firstStatsCanvas = canvasDiv;
         //div.append(canvasDiv);
         Drawing.drawCharSheet(canvasDiv,player);
+
         (session as DeadSession).makeDeadLand();
+
         String divID = "deadIntro${session.players[0].id}";
         String narration = "A wave of destruction heralds the arrival of the ${player.htmlTitle()}. They have many INTERESTS, including ${player.interest1.name} and ${player.interest2.name}.  They are the only Player. SBURB was never meant to be single player, and they have activated the secret 'Dead Session' mode as a punishment. Or is it a reward?  ";
         narration += " <Br><br>Skaia is black and lifeless. ";
@@ -27,11 +30,24 @@ class DeadIntro extends Scene {
         String html = "<canvas id='${divID}' width='${canvasWidth.toString()}' height='${canvasHeight.toString()}'>  </canvas><br><Br>$narration";
         appendHtml(div, html);
         Drawing.drawSinglePlayer(querySelector("#${divID}"), player);
+        ImportantEvent alt = this.addImportantEvent();
+        if(alt != null && alt.alternateScene(div)){
+            return;
+        }
+
+    }
+
+    ImportantEvent addImportantEvent(){
+        var current_mvp = findStrongestPlayer(this.session.players);
+        ////session.logger.info("Entering session, mvp is: " + current_mvp.getStat(Stats.POWER));
+
+        return this.session.addImportantEvent(new DeadSessionPlayerEntered(this.session, current_mvp.getStat(Stats.POWER),this.player,null) );
+
 
     }
 
     @override
-    bool trigger(List<Player> playerList) {
+    bool trigger(List<GameEntity> playerList) {
         return true;
     }
 }

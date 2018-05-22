@@ -1,18 +1,19 @@
 import '../../SBURBSim.dart';
 import '../../navbar.dart';
 import 'dart:html';
+import "dart:async";
 
-main() {
+Future<Null> main() async {
     doNotRender = true;
     loadNavbar();
     window.onError.listen((Event event){
         ErrorEvent e = event as ErrorEvent;
-        printCorruptionMessage(e);
+
         return;
     });
 
-    globalInit();
-    Element div = SimController.instance.storyElement;
+    await globalInit();
+    Element div = querySelector("#story");
     displayInterestThemes(div);
     displayAspect(div);
     displayClassThemes(div);

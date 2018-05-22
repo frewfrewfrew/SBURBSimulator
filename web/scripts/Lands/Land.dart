@@ -9,6 +9,17 @@ import "FeatureTypes/QuestChainFeature.dart";
 import "dart:html";
 ///A land is build from features.
 class Land extends Object with FeatureHolder {
+
+    //for a land, it will just be their player.
+    //but for a MOON it will be every carapace and all associated dream selves.
+    List<GameEntity> associatedEntities = new List<GameEntity>();
+
+    bool dead = false;
+
+    //land hp will buff royalty (if moon)
+    //and will be directly compared to a Big Bad's attack power to see if it can be destroyed.
+    //corruption weakens a land
+    int hp = 0;
     //Session session; // inherited from FeatureHolder
     bool corrupted = false;
     //can be more than one thing, will pick one or two things at random by weight
@@ -63,6 +74,7 @@ class Land extends Object with FeatureHolder {
         l.mainTheme = mainTheme;
         l.secondaryTheme = secondaryTheme;
         l.currentQuestChain = currentQuestChain;
+        l.hp = hp;
         return l;
     }
 
@@ -88,12 +100,12 @@ class Land extends Object with FeatureHolder {
 
     @override
     String toString() {
-        return name;
+        return "$name";
     }
 
     String get shortName {
         RegExp exp = new RegExp(r"""\b(\w)""", multiLine: true);
-        return joinMatches(exp.allMatches(name)).toUpperCase();
+        return "${joinMatches(exp.allMatches(name)).toUpperCase()}";
     }
 
     String getChapter() {
@@ -101,13 +113,13 @@ class Land extends Object with FeatureHolder {
     }
 
     bool doQuest(Element div, Player p1, GameEntity p2) {
-        //print("current quest chain is: ${currentQuestChain.name} and helper is: $p2");
+        //;
         bool ret = currentQuestChain.doQuest(p1, p2, denizenFeature, consortFeature, symbolicMcguffin, physicalMcguffin, div, this);
         if(currentQuestChain.finished) {
            // session.logger.info("deciding what to do next.");
             decideHowToProcede(); //if i just finished the last quest, then i am done.
         }
-        //print("ret is $ret from $currentQuestChain");
+        //;
         return ret;
     }
 
@@ -119,13 +131,13 @@ class Land extends Object with FeatureHolder {
     void decideHowToProcede() {
         if(currentQuestChain.finished) {
             if(currentQuestChain is PreDenizenQuestChain) {
-                //print("moving on to next set of quests");
+                //;
                 firstCompleted = true;
             }else if(currentQuestChain is DenizenQuestChain) {
-                //print("moving on to next set of quests");
+                //;
                 secondCompleted = true;
             }else{
-                //print("no more quests for $name");
+                //;
                 thirdCompleted = true;
                 noMoreQuests = true;
 
@@ -136,15 +148,15 @@ class Land extends Object with FeatureHolder {
     void decideIfTimeForNextChain(List<GameEntity> players) {
         if(currentQuestChain.finished) {
             if(currentQuestChain is PreDenizenQuestChain) {
-                //print("moving on to next set of quests");
+                //;
                 firstCompleted = true;
                 currentQuestChain = selectQuestChainFromSource(players, secondQuests);
             }else if(currentQuestChain is DenizenQuestChain) {
-                //print("moving on to next set of quests");
+                //;
                 secondCompleted = true;
                 currentQuestChain = selectQuestChainFromSource(players, thirdQuests);
             }else{
-                //print("no more quests for $name");
+                //;
                 thirdCompleted = true;
                 noMoreQuests = true;
                 currentQuestChain = null;
@@ -156,7 +168,7 @@ class Land extends Object with FeatureHolder {
     // So go through first and check the trigger, and that are false, remove.
     // then pick randomly from remainder.
     QuestChainFeature selectQuestChainFromSource(List<GameEntity> players, WeightedIterable<QuestChainFeature> source) {
-        //print("Selecting a quest from $source");
+        //;
         if(source.isEmpty) {
             currentQuestChain = null;
             noMoreQuests = true;
@@ -166,7 +178,7 @@ class Land extends Object with FeatureHolder {
         WeightedList<QuestChainFeature> valid = new WeightedList<QuestChainFeature>();
         for(WeightPair<QuestChainFeature> p in source.pairs) {
             //TODO make work for multiple players post DEAD Sessions
-           // print("condition is: ${p.item.condition}");
+           // ;
             if(p.item.condition(players)) valid.addPair(p);
         }
         return session.rand.pickFrom(valid);
@@ -210,7 +222,7 @@ class Land extends Object with FeatureHolder {
     ///pass in an aspect so i can make denizens.
     Land.fromWeightedThemes(Map<Theme, double> themes, Session session, Aspect a, SBURBClass c){
         this.session = session;
-       // print("making a land for session $session");
+       // ;
         if(themes == null) return; //just make an empty land. (nneeded for dead sessions);
 
         pickName(themes);
@@ -221,6 +233,84 @@ class Land extends Object with FeatureHolder {
 
         this.processDenizen(a,c);
         this.processConsort();
+        setHP();
+    }
+
+    //by default, each land has a portion of the sessions hp, though it isn't the same thing as the session's hp.
+    void setHP() {
+        //ironically, the way lands get set up this has the unintended effect of
+        //making it so the first player has the strongest land, and the last the weakest.
+        //while it's unintended, this sounds like something that would happen in glitch faq so....
+        //canon.
+        //wait it might only happen....huh. why are lands being made so many times?
+        //first few lands have that problem, but not others. and then it thinks 9 players and not 7
+        //whatever. it's not broken.
+        int ratio = 1+session.players.length;
+        hp = (session.sessionHealth/ratio).round();
+        if(corrupted) hp = (hp/2).round();
+       // ;
+
+    }
+
+    Element planetsplode(GameEntity killer) {
+        session.logger.info("AB: Oh shit, JR! A land is exploding! Come see this!");
+        session.stats.planetDestroyed = true;
+        killer.landKillCount ++;
+        dead = true;
+
+        if(session is DeadSession) {
+            (session as DeadSession).failed = true;
+        }
+        List<String> killed = new List<String>();
+
+        //KILL the associated player (unless they have reached skaia)
+        for(GameEntity g in associatedEntities) {
+            if(g is Player && !g.dead) {
+                Player p = g as Player;
+                //land is gone, this should be only reference to it
+                //p.land = null;
+                if(p.aspect == Aspects.SPACE) {
+                    session.stats.brokenForge = true;
+                }
+                if(!p.canHelp()) { //you can't leave your planet yet, you're dead, and no one can get to your body to smooch it, so dream self dead, too
+                    killed.add(p.htmlTitle());
+                    killPlayer(p, killer);
+                }else if(!thirdCompleted && session.rand.nextBool()) {
+                    //you happened to be on your planet even though you could have been off
+                    killed.add(p.htmlTitle());
+                    killPlayer(p, killer);
+                }
+                //if third IS completed, assume they are on skaia and so safe
+            }
+        }
+
+        Element ret = new DivElement();
+        String killedString  = "";
+        String are = "are";
+        if(killed.length == 1) are = "is";
+        if(killed.isNotEmpty) killedString = "The ${turnArrayIntoHumanSentence(killed)} $are now dead.";
+        ret.setInnerHtml( "The ${name} is now destroyed. $killedString");
+        //render explosion graphic and text. text should describe if anyone died.
+        //Rewards/planetsplode.png
+        if(!doNotRender) {
+            ImageElement image = new ImageElement(src: "images/Rewards/planetsplode.png");
+
+            //can do this because it's not canvas
+            image.onLoad.listen((e) {
+                ret.append(image);
+            });
+        }
+
+        return ret;
+    }
+
+    void killPlayer(Player p, GameEntity killer) {
+        p.makeDead("The $name exploding.", killer);
+        if(!p.dreamSelf) {
+            p.isDreamSelf = true;
+            //don't loot shit youe xplode
+            p.makeDead("the $name exploding, and leaving no corpse behind to smooch.",killer,false);
+        }
     }
 
     void setFeatures(WeightedList<Feature> list) {
@@ -252,10 +342,10 @@ class Land extends Object with FeatureHolder {
         if(denizenFeature == null) {
             double roll = session.rand.nextDouble(a.difficulty + c.difficulty);
             if(roll > 0.95) {
-                session.logger.info("strong denizen for $c of $a");
+                //session.logger.info("strong denizen for $c of $a");
                 denizenFeature = new EasyDenizenFeature("Denizen ${session.rand.pickFrom(DenizenFeature.strongDenizens)}");
             }else if(roll < 0.05) {
-                session.logger.info("weak denizen for $c of $a");
+                //session.logger.info("weak denizen for $c of $a");
                 denizenFeature = new HardDenizenFeature("Denizen ${session.rand.pickFrom(DenizenFeature.weakDenizens)}");
             }else {
                 denizenFeature = new DenizenFeature("Denizen ${session.rand.pickFrom(a.denizenNames)}");

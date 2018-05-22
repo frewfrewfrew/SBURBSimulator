@@ -1,7 +1,7 @@
 //put all OCDataString code here.
 import "dart:html";
 import 'dart:typed_data';
-
+import "dart:async";
 import "SBURBSim.dart";
 import 'includes/bytebuilder.dart';
 import 'includes/lz-string.dart';
@@ -13,7 +13,7 @@ import 'dart:convert';
 //call this ONLY inside a function.
 class CharacterEasterEggEngine {
   var creatorCharacters = ["b=E0%12%C2%B8%C3%BE*%00%11%1E%1E%2F&s=,,Drawing distant Lands,Procedural Generation,ParadoxLands"
-  , "b=%2B*-%C3%96%C3%B4%5C%00%C3%90%2C%2C%0D&s=,,Arson,Shipping,authorBotJunior","b=%2B*-%06%C3%B4%C2%A3%04%C3%90%2C%2C%0D&s=,,Authoring,Robots,authorBot&x=hjAA","b=%C3%A8%C3%90%C2%99L%C3%BE)%04%17%1C%1C.&s=,,100 Art Projects At Once,Memes,karmicRetribution","b=%3C%1E%07%C3%86%C3%BE%C2%A3%04%13%18%18%0D&s=,,The AuthorBot,Authoring,jadedResearcher"];
+  , "b=%2B*-%C3%96%C3%B4%5C%00%C3%90%2C%2C%0D&s=,,Arson,Shipping,authorBotJunior","b=%2B*-%06%C3%B4%C2%A3%04%C3%90%2C%2C%0D&s=,,Authoring,Robots,authorBot&x=hjAA","b=%C3%A8%C3%90%C2%99L%C3%BE)%04%17%1C%1C.&s=,,100 Art Projects At Once,Memes,karmicRetribution&x=pmAA","b=%3C%1E%07%C3%86%C3%BE%C2%A3%04%13%18%18%0D&s=,,The AuthorBot,Authoring,jadedResearcher"];
 
   Map<String, List> ocs = {};
   //parses the text file as newline seperated and load them into the array.
@@ -36,21 +36,14 @@ class CharacterEasterEggEngine {
 
 
   //javascript was fine with processForSim being both a method and a bool so long as it was this.process, but dart is not.
-  dynamic loadArrayFromFile(arr, String file, p, callBack, that){
+  Future<Null> loadArrayFromFile(Session session, arr, String file, p)async{
    // //print("loading" + file);
    // var that = this; //TODO what the hell was i doing here, that comes from a param
-    HttpRequest.getString(file).then((data) {
-      // Do something with the response.
-      ////print("got HTTP response with $data");
+    // 4/4/18 is this a sane thing to do? instead of a 'then' should i be doing something else?
+    //how does homestuck the moive do it? oh, just like this. okay then.
+    await HttpRequest.getString(file).then((data) {
       parseFileContentsToArray(arr, data.trim());
-      if(p != null && callBack != null) return processForSim(callBack);
-      if(p == null && callBack != null) {
-        if(that == null) {
-          callBack();
-        }else {
-          callBack(that); //whoever calls me is responsible for knowing when all are loaded.
-        }
-      }
+      if(p != null) return processForSim(session);
     });
 
 
@@ -63,19 +56,19 @@ class CharacterEasterEggEngine {
     ////print(arr);
     ////print(this[arr]);
   }
-  void processForSim(callBack){
-  	Random rand = curSessionGlobalVar.rand;
-  	//print("processing eggs for sim");
+  void processForSim(Session session){
+  	Random rand = session.rand;
+  	//;
     var pool = this.getPoolBasedOnEggs(rand);
-    var potentials = this.playerDataStringArrayToURLFormat(pool);
+    var potentials = this.playerDataStringArrayToURLFormat(session, pool);
     List<dynamic> ret = [];
     List<Player> spacePlayers = findAllAspectPlayers(potentials, Aspects.SPACE);
     var space = rand.pickFrom(spacePlayers);
     removeFromArray(space,potentials);
     if(space == null){
-      space = randomSpacePlayer(curSessionGlobalVar);
+      space = randomSpacePlayer(session);
       space.chatHandle = "randomSpace";
-      ////print("Random space player!");
+      ////;
       space.quirk = new Quirk(rand);
       space.quirk.favoriteNumber = 0;
       space.deriveChatHandle = false;
@@ -84,7 +77,7 @@ class CharacterEasterEggEngine {
     var time = rand.pickFrom(timePlayers);
     removeFromArray(time,potentials);
     if(time == null){
-      time = randomTimePlayer(curSessionGlobalVar);
+      time = randomTimePlayer(session);
       time.chatHandle = "randomTime";
       time.quirk = new Quirk(rand);
       time.quirk.favoriteNumber = 0;
@@ -106,25 +99,25 @@ class CharacterEasterEggEngine {
       ////print(p);
       if(p.chatHandle.trim() == "") p.chatHandle = getRandomChatHandle(rand, p.class_name,p.aspect,p.interest1, p.interest2);
     }
-    curSessionGlobalVar.replayers = ret;
-    callBack();
+    session.replayers = ret;
   }
-  void loadArraysFromFile(callBack, processForSim, that){
+
+  Future<Null> loadArraysFromFile(Session session,bool processForSim) async {
     //too confusing trying to only load the assest i'll need. wait for now.
-    this.loadArrayFromFile("redditCharacters","OCs/reddit.txt", processForSim,null,null);
-    this.loadArrayFromFile("tumblrCharacters","OCs/tumblr.txt", processForSim,null,null);
-    this.loadArrayFromFile("discordCharcters","OCs/discord.txt", processForSim,null,null);
-    this.loadArrayFromFile("creditsBuckaroos","OCs/creditsBuckaroos.txt", processForSim,null,null);
-    this.loadArrayFromFile("ideasWranglers","OCs/ideasWranglers.txt", processForSim,null,null);
-    this.loadArrayFromFile("patrons","OCs/patrons.txt", processForSim,null,null);
-    this.loadArrayFromFile("patrons2","OCs/patrons2.txt", processForSim,null,null);
-    this.loadArrayFromFile("patrons3","OCs/patrons3.txt", processForSim,null,null);
-    this.loadArrayFromFile("canon","OCs/canon.txt", processForSim,null,null);
-    this.loadArrayFromFile("bards","OCs/bards.txt", processForSim,null,null);
-    this.loadArrayFromFile("otherFandoms","OCs/otherFandoms.txt", processForSim,callBack,that); //last one in list has callback so I know to do next thing.
+    await this.loadArrayFromFile(session,"redditCharacters","OCs/reddit.txt", processForSim);
+    await this.loadArrayFromFile(session,"tumblrCharacters","OCs/tumblr.txt", processForSim);
+    await this.loadArrayFromFile(session,"discordCharcters","OCs/discord.txt", processForSim);
+    await this.loadArrayFromFile(session,"creditsBuckaroos","OCs/creditsBuckaroos.txt", processForSim);
+    await this.loadArrayFromFile(session,"ideasWranglers","OCs/ideasWranglers.txt", processForSim);
+    await this.loadArrayFromFile(session,"patrons","OCs/patrons.txt", processForSim);
+    await this.loadArrayFromFile(session,"patrons2","OCs/patrons2.txt", processForSim);
+    await this.loadArrayFromFile(session,"patrons3","OCs/patrons3.txt", processForSim);
+    await this.loadArrayFromFile(session,"canon","OCs/canon.txt", processForSim);
+    await this.loadArrayFromFile(session,"bards","OCs/bards.txt", processForSim);
+    await this.loadArrayFromFile(session,"otherFandoms","OCs/otherFandoms.txt", processForSim); //last one in list has callback so I know to do next thing.
   }
   dynamic getPoolBasedOnEggs(Random rand){
-    //print("checking egg pools");
+    //;
     List<dynamic> pool = [];
     //first, parse url params. for each param you find that's right, append the relevant characters into the array.
     if(getParameterByName("reddit",null)  == "true"){
@@ -164,7 +157,7 @@ class CharacterEasterEggEngine {
     }
 
     if(getParameterByName("canon",null)  == "true"){
-      //print("Adding canon to pool");
+      //;
       pool.addAll(this.ocs["canon"]);
     }
 
@@ -178,7 +171,7 @@ class CharacterEasterEggEngine {
     }
 
     if(pool.length == 0){
-      //	//print("i think i should be returning all characters.");
+      //	//;
       pool.addAll(this.ocs["redditCharacters"]);
       pool.addAll(this.ocs["tumblrCharacters"]);
       pool.addAll(this.ocs["discordCharcters"]);
@@ -194,23 +187,25 @@ class CharacterEasterEggEngine {
     return shuffle(rand, pool); //boring if the same peeps are always first.
 
   }
-  List<Player> processEasterEggsViewer(Random rand){
+  List<Player> processEasterEggsViewer(Session session, Random rand){
     var pool = this.getPoolBasedOnEggs(rand);
-    return this.playerDataStringArrayToURLFormat(pool);
+    return this.playerDataStringArrayToURLFormat(session,pool);
   }
-  List<Player> playerDataStringArrayToURLFormat(List<String> playerDataStringArray){
+
+
+  List<Player> playerDataStringArrayToURLFormat(Session session, List<String> playerDataStringArray){
     List<Player> ret = new List<Player>();
     String params =  window.location.href.substring(window.location.href.indexOf("?") + 1);
     String base = window.location.href.replaceAll("?$params","");
     //first, take each element in the array and seperate it out into s and b  (getRawParameterByName(name, url))
     for(num i = 0; i<playerDataStringArray.length; i++){
       String bs = "${base}?" +playerDataStringArray[i];
-      //print("bs is $bs");
+      //;
       String b = (getParameterByName("b", bs));
       List<String> s = Uri.encodeFull(getParameterByName("s", bs)).split(","); //these are NOT encoded in files, so make sure to encode them
       String x = (getParameterByName("x", bs));
       print ("processing fan oc, bs is $bs and b is $b and s is $s and x is: $x");
-      Player p = (dataBytesAndStringsToPlayer(b,s));
+      Player p = (dataBytesAndStringsToPlayer(session,b,s));
       if(x != null) {
         ByteReader reader = new ByteReader((stringToByteArray(x).buffer), 0);
         p.readInExtensionsString(reader);
@@ -219,8 +214,8 @@ class CharacterEasterEggEngine {
     }
     return ret;
   }
-  dynamic getAllReddit(){
-    return this.playerDataStringArrayToURLFormat(this.ocs["redditCharacters"]);
+  dynamic getAllReddit(Session session,){
+    return this.playerDataStringArrayToURLFormat(session,this.ocs["redditCharacters"]);
   }
 
 
@@ -232,7 +227,7 @@ class CharacterEasterEggEngine {
 dynamic playersToDataBytes(players){
   String ret = "";
   for(num i = 0; i<players.length; i++){
-    ////print("player " + i + " to data byte");
+    ////;
     ret += players[i].toDataBytes();
   }
   return LZString.compressToEncodedURIComponent(ret);
@@ -286,25 +281,25 @@ String generateURLParamsForPlayers(players, includeChatHandle){
 
 
 
-List<Player> dataBytesAndStringsToPlayers(String bytes, String s, String xbytes){
-  //print("dataBytesAndStringsToPlayers: xbytes is: $xbytes");
+List<Player> dataBytesAndStringsToPlayers(Session session, String bytes, String s, String xbytes){
+  //;
   //bytes are 11 chars per player
   //strings are 5 csv per player.
   ////print(bytes);
   ////print(bytes.length);
   List<String> strings = s.split(",");
   List<Player> players = [];
-  ////print(bytes);
+  print("databytes etc to players bytes i have are $bytes and strings is $strings");
   for(num i = 0; i<bytes.length/11; i+=1){;
-    ////print("player i: " + i + " being parsed from url");
+    print("in the for loop, i is $i");
     var bi = i*11; //i is which player we are on, which is 11 bytes long
     var si = i*5; //or 5 strings long
     var b = bytes.substring(bi, bi+11);
     //List<dynamic> s = [];
     var s = strings.sublist(si, si +5);  //TODO used to be "slice" in js, is it still?
-    ////print("passing b to player parser");
-    ////print(b);
-    var p = (dataBytesAndStringsToPlayer(b,s));
+    ////;
+    print("for one player, b is $b");
+    var p = (dataBytesAndStringsToPlayer(session, b,s));
     p.id = i; //will be overwritten by sim, but viewer needs it
     players.add(p);
   }
@@ -334,11 +329,12 @@ Uint8List stringToByteArray(str){
 
 //TODO FUTUREJR, REMOVE THIS METHOD AND INSTAD RELY ON session.RenderingEngine.renderers[1].dataBytesAndStringsToPlayer
 //see player.js toDataBytes and toDataString to see how I expect them to be formatted.
-dynamic dataBytesAndStringsToPlayer(String charString, List<String>str_arr){
+dynamic dataBytesAndStringsToPlayer(Session session, String charString, List<String>str_arr){
   var player = new Player();
-  player.session = new Session(-13); //so shit doesn't crash lookin gfor a mututator
+  player.session = session;
+  //player.session = new Session(-13); //so shit doesn't crash lookin gfor a mututator
   player.quirk = new Quirk(null);
-  //print("strings is: $str_arr");
+  //;
   ////print("chars is: " + charString);
   player.causeOfDrain = sanitizeString(Uri.decodeFull(str_arr[0]).trim());
   player.causeOfDeath = sanitizeString(Uri.decodeFull(str_arr[1]).trim());
@@ -351,13 +347,16 @@ dynamic dataBytesAndStringsToPlayer(String charString, List<String>str_arr){
   player.hairColor = intToHexColor((charString.codeUnitAt(0) << 16) + (charString.codeUnitAt(1) << 8) + (charString.codeUnitAt(2)) );
   player.class_name = intToClassName(charString.codeUnitAt(3) >> 4);
   player.aspect = Aspects.get(charString.codeUnitAt(3) & 15) ;//get 4 bits on end;
-  //print("I believe the int value of the aspect is: ${charString.codeUnitAt(3) & 15} which is: ${player.aspect}");
+  //;
 
   player.victimBlood = intToBloodColor(charString.codeUnitAt(4) >> 4);
   player.bloodColor = intToBloodColor(charString.codeUnitAt(4) & 15);
 
+  print("totaly byte is ${charString.codeUnitAt(5)} or ${charString[5]} interest1 value is ${charString.codeUnitAt(5) >> 4} and interest2 value is ${charString.codeUnitAt(5) & 15}");
   InterestCategory ic1 = InterestManager.get(charString.codeUnitAt(5) >> 4);
+  print("interest category 1 is $ic1");
   InterestCategory ic2 = InterestManager.get(charString.codeUnitAt(5) & 15);
+  print("interest category 2 is $ic2");
   //TODO this probably means interest category can't be null.
   player.interest1 = new Interest(i1, ic1);
   player.interest2 = new Interest(i2, ic2);
@@ -370,18 +369,21 @@ dynamic dataBytesAndStringsToPlayer(String charString, List<String>str_arr){
   player.leftMurderMode = 0 != ((1) & charString.codeUnitAt(6));
   player.robot = 0 != ((1<<7) & charString.codeUnitAt(7));
   var moon = 0 != ((1<<6) & charString.codeUnitAt(7));
-  ////print("moon binary is: " + moon);
+  print("moon binary is: $moon");
+  if(player.session.prospit == null) player.session.setupMoons("moon is null when trying to parse a data string");
   player.moon = moon ? player.session.prospit : player.session.derse;
+  print("i think that becomes ${player.moon}, is that ${player.session.prospit} or ${player.session.derse}?");
+
   ////print("moon string is: "  + player.moon);
   player.dead = 0 != ((1<<5) & charString.codeUnitAt(7));
   ////print("Binary string is: " + charString[7]);
   player.godDestiny = 0 != ((1<<4) & charString.codeUnitAt(7));
   player.quirk.favoriteNumber = charString.codeUnitAt(7) & 15;
- // //print("Player favorite number is: ${player.quirk.favoriteNumber}");
+ // //;
   player.leftHorn = charString.codeUnitAt(8);
   player.rightHorn = charString.codeUnitAt(9);
   player.hair = charString.codeUnitAt(10);
 
-  print("loaded player: ${player.chatHandle}");
+  ;
   return player;
 }

@@ -35,6 +35,10 @@ class Specibus extends Item {
         this.traits.add(requiredTrait);
     }
 
+    static Specibus fromItem(Item item){
+        return new Specibus(item.baseName, item.traits.first, new List.from(item.traits));
+    }
+
 
     //TODO  have a list of components that make this up. (keep track of and vs or?)
     //TODO your specibus can be 2x or 1/2 x kind. unlucky event where it breaks so 1/2 kind
@@ -80,6 +84,9 @@ class SpecibusFactory {
         if(CLAWS == null) CLAWS = new Specibus("Claws", ItemTraitFactory.CLAWS, [ ItemTraitFactory.POINTY,ItemTraitFactory.EDGED, ItemTraitFactory.BONE],shogunDesc: "Knucklekniveskind", abjDesc:"It's claws, dunkass. Monsters and shit have them. And fucking cat trolls.");
 
         _specibi.clear();
+        //i am going to forget i added this, and forget the meme that birthed it.
+        _specibi.add(new Specibus("Speedo", ItemTraitFactory.CLOTH, [ ItemTraitFactory.GROSSOUT]));
+
         _specibi.add(new Specibus("Sword", ItemTraitFactory.SWORD, [ ItemTraitFactory.EDGED, ItemTraitFactory.METAL, ItemTraitFactory.POINTY],shogunDesc: "ShogunKindBestKind", abjDesc:"Can you get more generic than a goddamned sword?"));
         _specibi.add(new Specibus("Hammer", ItemTraitFactory.HAMMER, [ItemTraitFactory.BLUNT, ItemTraitFactory.METAL],shogunDesc: "WhackySmackySkullCrackyKind",abjDesc:"Did you just loot your toolbox or some shit?"));
         _specibi.add(new Specibus("Rifle", ItemTraitFactory.RIFLE, [ ItemTraitFactory.SHOOTY, ItemTraitFactory.METAL],shogunDesc: "RootyTootyPointyShootyKind",abjDesc:"How the fuck did you get your hands on this?"));

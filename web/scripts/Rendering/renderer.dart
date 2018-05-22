@@ -3,7 +3,7 @@ import "dart:html";
 import "dart:math";
 
 import "../SBURBSim.dart";
-import "3d/three.dart" as THREE;
+import "threed/three.dart" as THREE;
 
 export "pass/effect.dart";
 export "pass/gradient.dart";
@@ -12,7 +12,7 @@ export "pass/image.dart";
 export "pass/sprite.dart";
 
 class Renderer {
-    static Future<ScriptElement> loadThree() => Loader.loadJavaScript("scripts/Rendering/3d/three.min.js");
+    static Future<ScriptElement> loadThree() => THREE.ScriptLoader.three();
 
     static Map<CanvasImageSource, THREE.Texture> _textureCache = <CanvasImageSource, THREE.Texture>{};
 
@@ -60,6 +60,7 @@ class Renderer {
 
     static Future<Null> _draw(RenderJob job) async {
         _setSize(job.width, job.height);
+        _renderer.clear(true, true, true);
 
         for (RenderJobPass pass in job._passes) {
             await pass.draw(job);

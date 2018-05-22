@@ -1,5 +1,14 @@
 <html>
 	<head>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-118163395-1"></script>
+		<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-118163395-1');
+</script>
 	<meta charset="utf-8">
 	<style>
 		@font-face {
@@ -9,9 +18,15 @@
 	</style>
 		<link rel="stylesheet" href="css/image_browser.css">
 		<link rel="stylesheet" href="css/navbar.css">
-		<script type="text/javascript" src="scripts/jquery-1.7.1.min.js"></script>
+		<!--<script type="text/javascript" src="scripts/jquery-1.7.1.min.js"></script>
 		<script type="text/javascript" src="scripts/v2.0/image_browser.js"></script>
-		<script type="text/javascript" src="scripts/navbar.js"></script>
+		<script type="text/javascript" src="scripts/navbar.js"></script>-->
+		<script type="text/javascript" src="scripts/includes/lz-string.min.js"></script>
+		<script type="text/javascript" src="scripts/includes/stacktrace.min.js"></script>
+		<script type="text/javascript" src="scripts/includes/tracer.js"></script>
+		<script type="application/dart" src="scripts/image_browser.dart"></script>
+		<script src="packages/browser/dart.js"></script>
+
 		<title>
 			SBURBSim: Image Browser
 		</title>
@@ -26,8 +41,8 @@
 
 		<div class = "whiteCenterThingy">
 			<div id = "header"></div>
-			<div class = "fanLinks">
-				<a class = 'navbarLink' href = "image_browser.html?hair=true">Hair</a>
+			<div id = "links" class = "fanLinks">
+				<!--<a class = 'navbarLink' href = "image_browser.html?hair=true">Hair</a>
 				<a class = 'navbarLink' href = "image_browser.html?horns=true">Horns</a>
 				<a class = 'navbarLink' href = "image_browser.html?fanArt=true">All FanArt</a>
 				<a class = 'navbarLink' href = "image_browser.html?firstPlayer=true">First Player</a>
@@ -40,7 +55,7 @@
 				<a class = 'navbarLink' href = "image_browser.html?mascotCompetition=true">Shogun vs JR</a>
 
 
-				<a class = 'navbarLink' href = "image_browser.html?oblivionSurfer=true">oblivionSurfer's FanArt</a>
+				<a class = 'navbarLink' href = "image_browser.html?oblivionSurfer=true">oblivionSurfer's FanArt</a>-->
 
 			</div>
 			<div id = "images"></div>

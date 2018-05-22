@@ -102,11 +102,11 @@ abstract class ImportantEvent { //TODO consider making this non abstract and hav
   appendHtml(div, canvasHTML);
   var canvasDiv = querySelector("#canvas"+ divID);
 
-  var pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+  var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
   Drawing.drawTimeGears(pSpriteBuffer);
   Drawing.drawSprite(pSpriteBuffer,timeClone1);
 
-  var dSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+  var dSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
   Drawing.drawTimeGears(dSpriteBuffer);
   Drawing.drawSpriteTurnways(dSpriteBuffer,timeClone2);
 
@@ -169,10 +169,10 @@ class PlayerDiedButCouldGodTier extends ImportantEvent{
 			appendHtml(div, canvasHTML);
 			var canvasDiv = querySelector("#canvas"+ divID);
 
-			var pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 			Drawing.drawSprite(pSpriteBuffer,this.doomedTimeClone);
 
-			var dSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var dSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 			Drawing.drawSprite(dSpriteBuffer,this.player);
 			Drawing.drawTimeGears(canvasDiv);//, this.doomedTimeClone);
 			Drawing.copyTmpCanvasToRealCanvasAtPos(canvasDiv, pSpriteBuffer,-100,0);
@@ -230,17 +230,17 @@ class PlayerDiedForever  extends ImportantEvent {
 			player.makeAlive();
 			player.addStat(Stats.SANITY, -0.5);
 
-			this.doomedTimeClone.makeDead("sacrificing themselves through a YellowYard");
+			this.doomedTimeClone.makeDead("sacrificing themselves through a YellowYard", player);
 
 			var divID = (div.id) + "_alt_${player.id}";
 			String canvasHTML = "<br><canvas id='canvas" + divID+"' width='$canvasWidth' height='$canvasHeight'>  </canvas>";
 			appendHtml(div, canvasHTML);
 			var canvasDiv = querySelector("#canvas"+ divID);
 
-			var pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 			Drawing.drawSprite(pSpriteBuffer,this.doomedTimeClone);
 
-			var dSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var dSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 			Drawing.drawSpriteTurnways(dSpriteBuffer,player);
 			Drawing.drawTimeGears(canvasDiv);//, this.doomedTimeClone);
 			Drawing.copyTmpCanvasToRealCanvasAtPos(canvasDiv, pSpriteBuffer,-100,0);
@@ -301,10 +301,10 @@ class PlayerWentGrimDark  extends ImportantEvent {
 			appendHtml(div, canvasHTML);
 			var canvasDiv = querySelector("#canvas"+ divID);
 
-			var pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 			Drawing.drawSprite(pSpriteBuffer,this.doomedTimeClone);
 
-			var dSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var dSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 			Drawing.drawSpriteTurnways(dSpriteBuffer,player);
 
 			Drawing.drawTimeGears(canvasDiv);//, this.doomedTimeClone);
@@ -358,10 +358,10 @@ class PlayerWentMurderMode  extends ImportantEvent{
 			appendHtml(div, canvasHTML);
 			var canvasDiv = querySelector("#canvas"+ divID);
 
-			var pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 			Drawing.drawSprite(pSpriteBuffer,this.doomedTimeClone);
 
-			var dSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var dSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 			Drawing.drawSpriteTurnways(dSpriteBuffer,player);
 
 			Drawing.drawTimeGears(canvasDiv);//, this.doomedTimeClone);
@@ -410,7 +410,7 @@ class JackPromoted  extends ImportantEvent{
 			appendHtml(div, canvasHTML);
 			var canvasDiv = querySelector("#canvas"+ divID);
 
-			var pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 			Drawing.drawSprite(pSpriteBuffer,this.doomedTimeClone);
 			Drawing.drawTimeGears(canvasDiv);//, this.doomedTimeClone);
 			Drawing.copyTmpCanvasToRealCanvasAtPos(canvasDiv, pSpriteBuffer,-100,0);
@@ -466,10 +466,10 @@ class FrogBreedingNeedsHelp extends ImportantEvent {
 			appendHtml(div, canvasHTML);
 			var canvasDiv = querySelector("#canvas"+ divID);
 
-			var pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 			Drawing.drawSprite(pSpriteBuffer,this.doomedTimeClone);
 
-			var dSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var dSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 			Drawing.drawSpriteTurnways(dSpriteBuffer,spacePlayer);
 
 			Drawing.drawTimeGears(canvasDiv);//, this.doomedTimeClone);
@@ -514,7 +514,7 @@ class PlayerEnteredSession  extends ImportantEvent {
 
 			narration +=  "After a brief struggle, the doomed " + this.doomedTimeClone.htmlTitleBasic() + " vanishes in a cloud of gears to join the final battle.";
 			player.dead = true;
-			narration += player.makeDead("apparantly displeasing the Observer.");
+			narration += player.makeDead("apparantly displeasing the Observer.",player);
 			appendHtml(div, narration);
 
 			this.doomedTimeClone.victimBlood = player.bloodColor;
@@ -525,10 +525,10 @@ class PlayerEnteredSession  extends ImportantEvent {
 			appendHtml(div, canvasHTML);
 			var canvasDiv = querySelector("#canvas"+ divID);
 
-			var pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 		Drawing.drawSprite(pSpriteBuffer,this.doomedTimeClone);
 
-			var dSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var dSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 		Drawing.drawSprite(dSpriteBuffer,player);
 
 		Drawing.drawTimeGears(canvasDiv);//, this.doomedTimeClone);
@@ -582,12 +582,57 @@ class TimePlayerEnteredSessionWihtoutFrog  extends ImportantEvent {
 			appendHtml(div, canvasHTML);
 			var canvasDiv = querySelector("#canvas"+ divID);
 
-			var pSpriteBuffer = Drawing.getBufferCanvas(querySelector("#sprite_template"));
+			var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
 			Drawing.drawSprite(pSpriteBuffer,this.doomedTimeClone);
 			Drawing.drawTimeGears(canvasDiv);
 			Drawing.copyTmpCanvasToRealCanvasAtPos(canvasDiv, pSpriteBuffer,-100,0);
 			return false;  //let original scene happen as well.
 	}
 
+}
+
+
+class DeadSessionPlayerEntered  extends ImportantEvent {
+	int importanceRating = 10;
+
+	//this is so illegal.
+	DeadSessionPlayerEntered(Session session, num mvp_value, Player player, Player doomedTimeClone) : super(session, mvp_value, player, doomedTimeClone);
+
+	@override
+	String humanLabel() {
+		String ret = "Just go....hang out with " + this.player.htmlTitleBasicNoTip() + " when the session starts. Maybe it will help. ";
+		return ret;
+	}
+
+	@override
+	bool alternateScene(div) {
+		this.timesCalled ++;
+		this.doomedTimeClone.dead = false;
+		this.doomedTimeClone.setStat(Stats.CURRENT_HEALTH, this.doomedTimeClone.getStat(Stats.HEALTH));
+
+		if (secondTimeClone != null) {
+			this.secondTimeClone.dead = false;
+			this.secondTimeClone.setStat(Stats.CURRENT_HEALTH, this.secondTimeClone.getStat(Stats.HEALTH));
+			return ImportantEvent.undoTimeUndoScene(div, this.session, this, this.doomedTimeClone, this.secondTimeClone);
+		}
+		var player = this.session.getVersionOfPlayerFromThisSession(this.player);
+		String narration = "<br>A " + this.doomedTimeClone.htmlTitleBasic() + " suddenly warps in from the future. ";
+		narration += " They seem really apologetic towards the ${this.player.htmlTitleBasic()}. ";
+		narration += " No one deserves what comes next. ";
+		narration += "The now doomed " + this.doomedTimeClone.htmlTitleBasic() + " fails to vanishes  in a cloud of gears and instead joins the dead players party as long as they can.";
+		appendHtml(div, narration);
+
+		player.addCompanion(this.doomedTimeClone);
+		var divID = (div.id) + "_alt_jack_promotion";
+		String canvasHTML = "<br><canvas id='canvas" + divID + "' width='$canvasWidth' height='$canvasHeight'>  </canvas>";
+		appendHtml(div, canvasHTML);
+		var canvasDiv = querySelector("#canvas" + divID);
+
+		var pSpriteBuffer = Drawing.getBufferCanvas(SimController.spriteTemplateWidth, SimController.spriteTemplateHeight);
+		Drawing.drawSprite(pSpriteBuffer, this.doomedTimeClone);
+		Drawing.drawTimeGears(canvasDiv);
+		Drawing.copyTmpCanvasToRealCanvasAtPos(canvasDiv, pSpriteBuffer, -100, 0);
+		return false; //let original scene happen as well.
+	}
 }
 
